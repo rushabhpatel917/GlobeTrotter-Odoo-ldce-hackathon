@@ -193,7 +193,10 @@
 
     <div class="top-nav">
       <a href="/static/dashboard.html" class="back-link">← Back to Dashboard</a>
-      <button class="btn btn-outline btn-sm" onclick="deleteCurrentTrip()">🗑️ Delete Trip</button>
+      <div style="display:flex;gap:10px">
+        <a id="viewItineraryBtn" href="/static/itinerary.html" class="btn btn-primary btn-sm">📅 View Day-Wise Itinerary</a>
+        <button class="btn btn-outline btn-sm" onclick="deleteCurrentTrip()">🗑️ Delete Trip</button>
+      </div>
     </div>
 
     <div id="tripDetailsContainer">
@@ -285,6 +288,8 @@
         </div>`;
       return;
     }
+    const itinBtn = document.getElementById('viewItineraryBtn');
+    if (itinBtn) itinBtn.href = `/static/itinerary.html?trip_id=${currentTripId}`;
 
     try {
       const res = await fetch(`/api/trips/${currentTripId}`);

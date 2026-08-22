@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="GlobeTrotter Day-Wise Itinerary — Complete chronological timeline view for multi-city travel activities."/>
+  <title>Day-Wise Itinerary — GlobeTrotter</title>
+  <link rel="stylesheet" href="/static/style.css"/>
+  <style>
+    /* ── Day-Wise Timeline Styling (Premium Aesthetic) ── */
+    .itin-wrapper {
+      max-width: 960px;
+      margin: 36px auto 80px;
+      padding: 0 24px;
+    }
+
+    .top-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 24px; flex-wrap: wrap; gap: 12px;
+    }
+    .back-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      color: var(--muted); text-decoration: none; font-size: 0.9rem;
+      transition: color var(--transition);
+    }
+    .back-btn:hover { color: var(--primary); }
+
+    /* Itinerary Banner */
+    .itin-banner {
+      background: linear-gradient(135deg, #090d16 0%, #1e293b 100%);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 36px;
+      margin-bottom: 36px;
+      box-shadow: 0 16px 40px rgba(0,0,0,.5);
+      position: relative; overflow: hidden;
+    }
+    .itin-banner::after {
+      content: '🗺️';
+      position: absolute; right: 28px; bottom: 12px;
+      font-size: 7.5rem; opacity: 0.08; pointer-events: none;
+    }
+
+    .itin-title { font-size: 2.2rem; font-weight: 800; color: #f8fafc; margin-bottom: 12px; }
+
+    .summary-pills {
+      display: flex; gap: 16px; flex-wrap: wrap; margin-top: 18px;
+    }
+    .summary-chip {
+      background: rgba(15,23,42,.7); border: 1px solid var(--border);
+      padding: 8px 16px; border-radius: 12px; font-size: 0.88rem;
+      display: flex; align-items: center; gap: 8px; color: var(--text);
+    }
+    .summary-chip strong { color: var(--primary); }
+
+    /* Day Header Card */
+    .day-card {
+      margin-bottom: 42px;
+    }
+
+    .day-header {
+      background: linear-gradient(90deg, var(--surface) 0%, rgba(30,41,59,.4) 100%);
+      border: 1px solid var(--border);
+      border-left: 5px solid var(--primary);
+      border-radius: 16px;
+      padding: 16px 24px;
+      margin-bottom: 24px;
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 12px;
+      box-shadow: var(--shadow);
+    }
+
+    .day-title-box { display: flex; align-items: center; gap: 12px; }
+    .day-number-badge {
+      background: var(--primary); color: #0f172a;
+      font-weight: 800; font-size: 0.85rem; padding: 4px 12px;
+      border-radius: 999px; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .day-city-name { font-size: 1.3rem; font-weight: 800; color: #f8fafc; }
+    .day-date-str { font-size: 0.9rem; color: var(--accent); font-weight: 600; }
+
+    /* Timeline Structure */
+    .timeline {
+      position: relative;
+      padding-left: 36px;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute; left: 15px; top: 8px; bottom: 8px;
+      width: 3px; background: linear-gradient(180deg, var(--primary) 0%, var(--accent) 100%);
+      border-radius: 999px; opacity: 0.4;
+    }
+
+    .timeline-node {
+      position: relative; margin-bottom: 24px;
+    }
+    .timeline-node:last-child { margin-bottom: 0; }
+
+    /* Node Marker Dot */
+    .node-dot {
+      position: absolute; left: -36px; top: 18px;
+      width: 24px; height: 24px; border-radius: 50%;
+      background: var(--bg); border: 3px solid var(--primary);
+      box-shadow: 0 0 10px rgba(56,189,248,.5);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; color: var(--primary);
+    }
+
+    /* Node Content Card */
+    .node-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px 24px;
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 18px; flex-wrap: wrap;
+      transition: all var(--transition);
+    }
+    .node-card:hover {
+      border-color: rgba(56,189,248,.4);
+      transform: translateX(4px);
+      box-shadow: 0 8px 24px rgba(0,0,0,.4);
+    }
+
+    .node-left {
+      display: flex; align-items: center; gap: 16px; flex: 1; min-width: 280px;
+    }
+
+    .time-badge {
+      background: rgba(56,189,248,.12); color: var(--primary);
+      border: 1px solid rgba(56,189,248,.3);
+      font-size: 0.9rem; font-weight: 800;
+      padding: 8px 14px; border-radius: 10px;
+      white-space: nowrap; flex-shrink: 0;
+    }
+
+    .act-details h4 {
+      font-size: 1.1rem; font-weight: 700; color: #f8fafc; margin-bottom: 4px;
+    }
+    .act-details p {
+      font-size: 0.86rem; color: var(--muted); line-height: 1.45; margin-bottom: 8px;
+    }
+
+    .act-meta-row {
+      display: flex; gap: 12px; flex-wrap: wrap; font-size: 0.8rem; color: var(--muted);
+    }
+    .meta-tag {
+      background: var(--bg); border: 1px solid var(--border);
+      padding: 3px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;
+    }
+
+    .node-right {
+      display: flex; flex-direction: column; align-items: flex-end; gap: 8px;
+    }
+    .cost-badge {
+      font-size: 1.1rem; font-weight: 800; color: var(--success);
+    }
+    .cost-badge.paid { color: var(--warning); }
+
+    /* Print styling */
+    @media print {
+      body { background: #fff; color: #000; }
+      .navbar, .top-bar, .no-print { display: none !important; }
+      .itin-wrapper { max-width: 100%; margin: 0; padding: 0; }
+      .node-card { border: 1px solid #ccc; background: #fff; color: #000; box-shadow: none; }
+      .act-details h4 { color: #000; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a href="/" class="logo">🌍 GlobeTrotter</a>
+    <nav>
+      <a href="/static/dashboard.html">Dashboard</a>
+      <a href="/static/create-trip.html">Plan New Trip</a>
+      <a href="/static/activities.html">Activities</a>
+      <a href="/static/itinerary.html" class="active">Itinerary</a>
+    </nav>
+  </nav>
+
+  <div class="itin-wrapper">
+
+    <div class="top-bar">
+      <a href="/static/dashboard.html" class="back-btn">← Back to Dashboard</a>
+      <div class="no-print" style="display:flex;gap:10px">
+        <button class="btn btn-outline btn-sm" onclick="window.print()">🖨️ Print Itinerary</button>
+        <a id="editTripLink" href="#" class="btn btn-primary btn-sm">✏️ Edit Trip Details</a>
+      </div>
+    </div>
+
+    <!-- Banner -->
+    <div class="itin-banner" id="itinBanner">
+      <div class="skeleton" style="height:32px;width:60%;margin-bottom:12px"></div>
+      <div class="skeleton" style="height:20px;width:40%"></div>
+    </div>
+
+    <!-- Timeline Container -->
+    <div id="timelineContainer">
+      <div class="empty-state">
+        <div class="icon">⏳</div>
+        <h3>Loading day-wise itinerary...</h3>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+  let currentTripId = 1;
+
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.has('trip_id') || urlParams.has('id')) {
+    currentTripId = parseInt(urlParams.get('trip_id') || urlParams.get('id'), 10) || 1;
+  }
+  document.getElementById('editTripLink').href = `/static/trip-details.html?id=${currentTripId}`;
+
+  async function loadDayWiseItinerary() {
+    try {
+      const res = await fetch(`/api/trips/${currentTripId}/itinerary`);
+      const json = await res.json();
+
+      if (!json.success || !json.data) {
+        showError('Trip itinerary not found.');
+        return;
+      }
+
+      renderBanner(json.data);
+      renderTimeline(json.data);
+
+    } catch(e) {
+      showError('Failed to connect to server.');
+    }
+  }
+
+  function renderBanner(data) {
+    const totalCost = (data.chronological || []).reduce((sum, item) => sum + (item.cost || 0), 0);
+    const actCount  = (data.chronological || []).length;
+    
+    // Unique cities count
+    const citiesSet = new Set((data.chronological || []).map(i => i.city));
+
+    document.getElementById('itinBanner').innerHTML = `
+      <h1 class="itin-title">📅 ${escHtml(data.trip_title)}</h1>
+      <p style="color:var(--muted);font-size:0.95rem">
+        Day-wise chronological travel schedule & itinerary timeline
+      </p>
+
+      <div class="summary-pills">
+        <div class="summary-chip">
+          🗓️ <span><strong>${data.start_date || 'Flexible Date'}</strong> ${data.end_date ? ' → ' + data.end_date : ''}</span>
+        </div>
+        <div class="summary-chip">
+          🏙️ <span><strong>${citiesSet.size}</strong> Destinatio${citiesSet.size !== 1 ? 'ns' : ''}</span>
+        </div>
+        <div class="summary-chip">
+          🎟️ <span><strong>${actCount}</strong> Scheduled Activit${actCount !== 1 ? 'ies' : 'y'}</span>
+        </div>
+        <div class="summary-chip">
+          💰 Total Cost: <strong>${totalCost > 0 ? '$' + totalCost.toFixed(2) : 'Free'}</strong>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderTimeline(data) {
+    const container = document.getElementById('timelineContainer');
+    const itinerary = data.itinerary || [];
+
+    if (!itinerary.length) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="icon">🧭</div>
+          <h3>No activities scheduled yet</h3>
+          <p>Add destinations and discover activities to generate your day-wise itinerary timeline.</p>
+          <a href="/static/activities.html?trip_id=${currentTripId}" class="btn btn-primary" style="margin-top:16px">＋ Add Activities Now</a>
+        </div>`;
+      return;
+    }
+
+    let dayCounter = 1;
+    container.innerHTML = itinerary.map(dayBlock => {
+      const dateStr = dayBlock.date;
+      const cities  = dayBlock.cities || [];
+
+      return cities.map(cityBlock => {
+        const cityName = cityBlock.city;
+        const acts     = cityBlock.activities || [];
+        const currentDayNum = dayCounter++;
+
+        return `
+          <div class="day-card">
+            <!-- Day / Date / City Header -->
+            <div class="day-header">
+              <div class="day-title-box">
+                <span class="day-number-badge">DAY ${currentDayNum}</span>
+                <span class="day-city-name">📍 ${escHtml(cityName)}</span>
+              </div>
+              <div class="day-date-str">📅 ${escHtml(dateStr)}</div>
+            </div>
+
+            <!-- Timeline Activities -->
+            <div class="timeline">
+              ${acts.map((a, idx) => `
+                <div class="timeline-node">
+                  <div class="node-dot">📍</div>
+
+                  <div class="node-card">
+                    <div class="node-left">
+                      <div class="time-badge">🕒 ${escHtml(a.time || '09:00 AM')}</div>
+
+                      <div class="act-details">
+                        <h4>${escHtml(a.name)}</h4>
+                        ${a.description ? `<p>${escHtml(a.description)}</p>` : ''}
+
+                        <div class="act-meta-row">
+                          <div class="meta-tag">⏱ ${escHtml(a.duration)}</div>
+                          <div class="meta-tag">🏷️ ${escHtml(a.category)}</div>
+                          ${a.notes ? `<div class="meta-tag">📝 ${escHtml(a.notes)}</div>` : ''}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="node-right">
+                      <div class="cost-badge ${a.cost > 0 ? 'paid' : ''}">
+                        ${a.cost > 0 ? '$' + a.cost.toFixed(2) : 'FREE'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }).join('');
+  }
+
+  function showError(msg) {
+    document.getElementById('timelineContainer').innerHTML = `
+      <div class="empty-state">
+        <div class="icon">⚠️</div>
+        <h3>${msg}</h3>
+        <a href="/static/dashboard.html" class="btn btn-outline" style="margin-top:14px">Go to Dashboard</a>
+      </div>`;
+  }
+
+  function escHtml(s) {
+    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  loadDayWiseItinerary();
+</script>
+
+</body>
+</html>
