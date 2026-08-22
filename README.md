@@ -7,10 +7,9 @@
 
 ### 🌐 Live Public Demo & Evaluator Access
 
+- 🌐 **LIVE PUBLIC URL FOR JUDGES:** **[https://wicked-months-worry.loca.lt](https://wicked-months-worry.loca.lt)**
 - 🚀 **Local Web App Portal:** `http://localhost:5000` *(Start via `python app.py`)*
-- 📡 **Local Network (Wi-Fi) URL:** `http://0.0.0.0:5000` *(Accessible by any team laptop on local network)*
-- ⚡ **Instant Global Public Demo Link:** Launch via `npx localtunnel --port 5000` or `ngrok http 5000` for live remote evaluation!
-- 🔒 **Shared Public Read-Only Trip View:** `/static/public-trip.html?id=1`
+- 🔒 **Shared Public Read-Only Trip View:** [https://wicked-months-worry.loca.lt/static/public-trip.html?id=1](https://wicked-months-worry.loca.lt/static/public-trip.html?id=1)
 
 ---
 
