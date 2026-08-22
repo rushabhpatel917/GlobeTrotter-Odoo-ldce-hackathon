@@ -3,44 +3,56 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta name="description" content="GlobeTrotter — Discover amazing activities for your trip. Search, filter by city and category, and add to your itinerary."/>
-  <title>Discover Activities — GlobeTrotter</title>
+  <meta name="description" content="GlobeTrotter — Discover and select amazing activities for your trip with real-time selection state."/>
+  <title>Discover & Select Activities — GlobeTrotter</title>
   <link rel="stylesheet" href="/static/style.css"/>
   <style>
-    /* ── Activity Discovery UI ── */
+    /* ── Activity Discovery & Selection Polish ── */
+    .controls-wrapper {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow);
+    }
+
     .controls-bar {
       display: flex; gap: 12px; flex-wrap: wrap;
-      padding: 20px 0 8px;
+      margin-bottom: 14px;
     }
-    .controls-bar input  { flex: 1; min-width: 240px; }
-    .controls-bar select { width: 200px; flex-shrink: 0; }
+    .controls-bar input  { flex: 1; min-width: 220px; font-size: 0.95rem; }
+    .controls-bar select { width: 190px; flex-shrink: 0; font-size: 0.9rem; }
 
     .city-tabs {
       display: flex; gap: 8px; flex-wrap: wrap;
-      padding: 12px 0 20px;
+      padding-top: 6px;
     }
     .city-tab {
-      padding: 7px 18px; border-radius: 999px;
+      padding: 7px 16px; border-radius: 999px;
       border: 1px solid var(--border);
-      background: transparent; color: var(--muted);
-      cursor: pointer; font-size: 0.85rem; font-weight: 500;
+      background: var(--bg); color: var(--muted);
+      cursor: pointer; font-size: 0.84rem; font-weight: 600;
       transition: all var(--transition);
+      display: flex; align-items: center; gap: 4px;
     }
     .city-tab:hover { border-color: var(--primary); color: var(--primary); }
     .city-tab.active {
       border-color: var(--primary); color: var(--primary);
-      background: rgba(56,189,248,.12);
+      background: rgba(56,189,248,.14);
+      box-shadow: 0 0 12px rgba(56,189,248,.2);
     }
 
     .results-meta {
       display: flex; justify-content: space-between; align-items: center;
-      padding-bottom: 16px; color: var(--muted); font-size: 0.88rem;
+      padding: 0 4px 16px; color: var(--muted); font-size: 0.88rem; flex-wrap: wrap; gap: 8px;
     }
 
+    /* Grid for Mobile & Desktop */
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
-      gap: 20px;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 22px;
       padding-bottom: 60px;
     }
 
@@ -48,64 +60,118 @@
     .activity-card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 24px;
-      display: flex; flex-direction: column; gap: 12px;
+      border-radius: 18px;
+      overflow: hidden;
+      display: flex; flex-direction: column;
       transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition);
+      position: relative;
     }
     .activity-card:hover {
-      border-color: rgba(56,189,248,.45);
+      border-color: rgba(56,189,248,.5);
       transform: translateY(-4px);
-      box-shadow: 0 10px 30px rgba(0,0,0,.45);
+      box-shadow: 0 12px 36px rgba(0,0,0,.5);
     }
 
-    .card-top {
-      display: flex; justify-content: space-between;
-      align-items: flex-start; gap: 8px;
+    /* Visual Banner Header */
+    .card-banner {
+      height: 100px;
+      position: relative;
+      display: flex; align-items: flex-end; justify-content: space-between;
+      padding: 14px 18px;
+      background-size: cover; background-position: center;
     }
-    .card-top h3 { font-size: 1.1rem; font-weight: 700; line-height: 1.3; color: #f8fafc; }
+    .card-banner.cat-Sightseeing { background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%); }
+    .card-banner.cat-Culture     { background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%); }
+    .card-banner.cat-Nature      { background: linear-gradient(135deg, #059669 0%, #047857 100%); }
+    .card-banner.cat-Adventure   { background: linear-gradient(135deg, #d97706 0%, #b45309 100%); }
+    .card-banner.cat-Experience  { background: linear-gradient(135deg, #db2777 0%, #be185d 100%); }
+
+    .banner-icon {
+      font-size: 2.2rem; filter: drop-shadow(0 2px 8px rgba(0,0,0,.4));
+    }
     .city-chip {
-      flex-shrink: 0;
-      font-size: 0.75rem; color: var(--muted);
-      background: rgba(255,255,255,.05);
-      border: 1px solid var(--border);
-      padding: 4px 10px; border-radius: 6px;
-      white-space: nowrap; font-weight: 500;
+      font-size: 0.76rem; color: #ffffff;
+      background: rgba(0,0,0,.45); backdrop-filter: blur(4px);
+      border: 1px solid rgba(255,255,255,.2);
+      padding: 4px 10px; border-radius: 999px;
+      font-weight: 600;
+    }
+
+    /* Selected State Glow & Highlights */
+    .activity-card.selected {
+      border-color: var(--success);
+      box-shadow: 0 0 20px rgba(52,211,153,.3);
+    }
+    .selected-ribbon {
+      position: absolute; top: 12px; left: 12px;
+      background: var(--success); color: #064e3b;
+      font-size: 0.72rem; font-weight: 800; text-transform: uppercase;
+      letter-spacing: 0.5px; padding: 4px 10px; border-radius: 999px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.4); display: none;
+    }
+    .activity-card.selected .selected-ribbon { display: inline-flex; align-items: center; gap: 4px; }
+
+    .card-body {
+      padding: 20px; flex: 1; display: flex; flex-direction: column; gap: 12px;
+    }
+
+    .card-title-row {
+      display: flex; justify-content: space-between; align-items: flex-start; gap: 8px;
+    }
+    .card-title-row h3 {
+      font-size: 1.12rem; font-weight: 700; color: #f8fafc; line-height: 1.35;
     }
 
     .card-desc {
       color: var(--muted); font-size: 0.88rem; line-height: 1.55;
-      display: -webkit-box; -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical; overflow: hidden;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
     }
 
-    .card-meta {
-      display: flex; align-items: center; gap: 16px;
-      font-size: 0.82rem; color: var(--muted);
+    .card-meta-pills {
+      display: flex; gap: 10px; flex-wrap: wrap; font-size: 0.8rem; color: var(--muted);
+      margin-top: 2px;
     }
-    .card-meta span { display: flex; align-items: center; gap: 4px; }
+    .meta-pill {
+      background: var(--bg); border: 1px solid var(--border);
+      padding: 4px 9px; border-radius: 6px; display: flex; align-items: center; gap: 4px;
+    }
 
     .card-bottom {
-      display: flex; justify-content: space-between;
-      align-items: center; margin-top: auto; padding-top: 12px;
-      border-top: 1px solid var(--border);
+      display: flex; justify-content: space-between; align-items: center;
+      margin-top: auto; padding-top: 14px; border-top: 1px solid var(--border);
     }
-    .price {
-      font-size: 1.15rem; font-weight: 800;
-      color: var(--success);
+    .price-tag {
+      font-size: 1.15rem; font-weight: 800; color: var(--success);
     }
-    .price.paid { color: var(--warning); }
-    .price sub { font-size: 0.72rem; font-weight: 400; color: var(--muted); }
+    .price-tag.paid { color: var(--warning); }
+    .price-tag sub { font-size: 0.72rem; font-weight: 400; color: var(--muted); }
 
-    .add-btn {
-      padding: 9px 18px; border-radius: var(--radius-sm); border: none;
-      background: rgba(56,189,248,.12); color: var(--primary);
+    /* Interactive Add / Selected Button */
+    .select-btn {
+      padding: 10px 18px; border-radius: var(--radius-sm); border: none;
       font-size: 0.85rem; font-weight: 700; cursor: pointer;
-      transition: background var(--transition), transform var(--transition);
-      display: flex; align-items: center; gap: 5px;
+      transition: all var(--transition);
+      display: flex; align-items: center; gap: 6px;
     }
-    .add-btn:hover { background: rgba(56,189,248,.24); transform: scale(1.03); }
-    .add-btn.added { background: rgba(52,211,153,.15); color: var(--success); pointer-events: none; }
+    .select-btn.unselected {
+      background: rgba(56,189,248,.12); color: var(--primary); border: 1px solid rgba(56,189,248,.3);
+    }
+    .select-btn.unselected:hover {
+      background: var(--primary); color: #0f172a; transform: scale(1.03);
+    }
+    .select-btn.selected {
+      background: rgba(52,211,153,.2); color: var(--success); border: 1px solid rgba(52,211,153,.4);
+    }
+    .select-btn.selected:hover {
+      background: rgba(248,113,113,.2); color: #f87171; border-color: rgba(248,113,113,.4);
+    }
+
+    /* Mobile adjustments */
+    @media (max-width: 640px) {
+      .controls-bar { flex-direction: column; }
+      .controls-bar select { width: 100%; }
+      .grid { grid-template-columns: 1fr; }
+    }
   </style>
 </head>
 <body>
@@ -124,37 +190,39 @@
 
     <!-- Page Header -->
     <div class="page-header">
-      <h1>🗺️ Discover <span>Activities</span></h1>
-      <p>Explore top experiences around the world — search, filter, and add to your trip.</p>
+      <h1>🗺️ Discover & Select <span>Activities</span></h1>
+      <p>Browse experiences, filter by destination, and toggle activities for your itinerary.</p>
     </div>
 
-    <!-- Search + Filter Controls -->
-    <div class="controls-bar">
-      <input
-        type="text"
-        id="searchInput"
-        placeholder="🔍  Search activities or cities (e.g. Eiffel Tower, Paris, Museum...)"
-        autocomplete="off"
-      />
-      <select id="categoryFilter">
-        <option value="">🏷️ All Categories</option>
-        <option value="Sightseeing">🏛️ Sightseeing</option>
-        <option value="Culture">🎨 Culture</option>
-        <option value="Nature">🌿 Nature</option>
-        <option value="Adventure">⚡ Adventure</option>
-        <option value="Experience">✨ Experience</option>
-      </select>
-    </div>
+    <!-- Search + Filter Controls Box -->
+    <div class="controls-wrapper">
+      <div class="controls-bar">
+        <input
+          type="text"
+          id="searchInput"
+          placeholder="🔍  Search activities or cities (e.g. Eiffel Tower, Paris, Museum...)"
+          autocomplete="off"
+        />
+        <select id="categoryFilter">
+          <option value="">🏷️ All Categories</option>
+          <option value="Sightseeing">🏛️ Sightseeing</option>
+          <option value="Culture">🎨 Culture</option>
+          <option value="Nature">🌿 Nature</option>
+          <option value="Adventure">⚡ Adventure</option>
+          <option value="Experience">✨ Experience</option>
+        </select>
+      </div>
 
-    <!-- City Quick Filter Tabs -->
-    <div class="city-tabs" id="cityTabs">
-      <button class="city-tab active" data-city="">🌐 All Cities</button>
-      <button class="city-tab" data-city="Paris">🇫🇷 Paris</button>
-      <button class="city-tab" data-city="Rome">🇮🇹 Rome</button>
-      <button class="city-tab" data-city="Barcelona">🇪🇸 Barcelona</button>
-      <button class="city-tab" data-city="London">🇬🇧 London</button>
-      <button class="city-tab" data-city="Tokyo">🇯🇵 Tokyo</button>
-      <button class="city-tab" data-city="Dubai">🇦🇪 Dubai</button>
+      <!-- City Quick Filter Tabs -->
+      <div class="city-tabs" id="cityTabs">
+        <button class="city-tab active" data-city="">🌐 All Cities</button>
+        <button class="city-tab" data-city="Paris">🇫🇷 Paris</button>
+        <button class="city-tab" data-city="Rome">🇮🇹 Rome</button>
+        <button class="city-tab" data-city="Barcelona">🇪🇸 Barcelona</button>
+        <button class="city-tab" data-city="London">🇬🇧 London</button>
+        <button class="city-tab" data-city="Tokyo">🇯🇵 Tokyo</button>
+        <button class="city-tab" data-city="Dubai">🇦🇪 Dubai</button>
+      </div>
     </div>
 
     <!-- Results Meta -->
@@ -173,9 +241,9 @@
 
 <script>
   /* ── State ── */
-  let activeCity = '';
+  let activeCity   = '';
   let activeTripId = 1;
-  const addedIds = new Set();
+  const selectedActivityIds = new Set();
 
   /* ── Elements ── */
   const grid      = document.getElementById('grid');
@@ -185,14 +253,25 @@
   const tripLabel = document.getElementById('targetTripLabel');
   const toastEl   = document.getElementById('toast');
 
-  /* Parse trip_id from URL query string if provided */
+  /* Parse trip_id from URL */
   const urlParams = new URLSearchParams(window.location.search);
   if (urlParams.has('trip_id')) {
     activeTripId = parseInt(urlParams.get('trip_id'), 10) || 1;
-    tripLabel.textContent = `🎯 Target Trip ID: #${activeTripId}`;
+    tripLabel.textContent = `🎯 Selected Trip ID: #${activeTripId}`;
   }
 
-  /* ── City Quick Filter Tabs ── */
+  /* Fetch existing trip activities to pre-mark selected state */
+  async function loadTripSelectionState() {
+    try {
+      const res  = await fetch(`/api/trips/${activeTripId}`);
+      const json = await res.json();
+      if (json.success && json.data && json.data.activities) {
+        json.data.activities.forEach(a => selectedActivityIds.add(a.id || a.activity_id));
+      }
+    } catch(e) {}
+  }
+
+  /* ── City Tabs ── */
   document.querySelectorAll('.city-tab').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.city-tab').forEach(b => b.classList.remove('active'));
@@ -206,35 +285,37 @@
   let debounceTimer;
   searchEl.addEventListener('input', () => {
     clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(loadActivities, 250);
+    debounceTimer = setTimeout(loadActivities, 220);
   });
   catEl.addEventListener('change', loadActivities);
 
-  /* ── Category Badge Helper ── */
+  /* Category Icons */
+  function categoryIcon(cat) {
+    const map = { Sightseeing: '🏛️', Culture: '🎨', Nature: '🌿', Adventure: '⚡', Experience: '✨' };
+    return map[cat] || '📍';
+  }
+
+  /* Category Badge Class */
   function badgeClass(cat) {
-    const map = {
-      Sightseeing: 'badge-Sightseeing',
-      Culture:     'badge-Culture',
-      Nature:      'badge-Nature',
-      Adventure:   'badge-Adventure',
-      Experience:  'badge-Experience'
-    };
+    const map = { Sightseeing: 'badge-Sightseeing', Culture: 'badge-Culture', Nature: 'badge-Nature', Adventure: 'badge-Adventure', Experience: 'badge-Experience' };
     return map[cat] || 'badge-Sightseeing';
   }
 
-  /* ── Render Loading Skeleton ── */
+  /* ── Skeleton Loading ── */
   function showSkeleton(n = 6) {
     grid.innerHTML = Array.from({length: n}, () => `
       <div class="activity-card">
-        <div class="skeleton" style="height:22px;width:70%;margin-bottom:8px"></div>
-        <div class="skeleton" style="height:14px;width:40%"></div>
-        <div class="skeleton" style="height:50px;margin-top:4px"></div>
-        <div class="skeleton" style="height:36px;margin-top:8px"></div>
+        <div class="skeleton" style="height:100px;width:100%"></div>
+        <div style="padding:18px">
+          <div class="skeleton" style="height:22px;width:70%;margin-bottom:10px"></div>
+          <div class="skeleton" style="height:14px;width:40%;margin-bottom:12px"></div>
+          <div class="skeleton" style="height:44px;margin-bottom:14px"></div>
+        </div>
       </div>
     `).join('');
   }
 
-  /* ── Fetch activities from backend ── */
+  /* ── Fetch activities from API ── */
   async function loadActivities() {
     showSkeleton();
     const q      = searchEl.value.trim();
@@ -248,110 +329,157 @@
       const res  = await fetch(`/api/activities?${params}`);
       const json = await res.json();
       const list = json.data || [];
-      countEl.textContent = `${list.length} activit${list.length !== 1 ? 'ies' : 'y'} found`;
+      countEl.textContent = `${list.length} activit${list.length !== 1 ? 'ies' : 'y'} available`;
       renderCards(list);
     } catch(err) {
       grid.innerHTML = `
         <div class="empty-state">
           <div class="icon">⚠️</div>
           <h3>Could not connect to server</h3>
-          <p>Make sure Flask server is running on localhost:5000.</p>
+          <p>Make sure Flask server is running.</p>
         </div>`;
       countEl.textContent = '';
     }
   }
 
-  /* ── Render activity cards ── */
+  /* ── Render Activity Cards ── */
   function renderCards(list) {
     if (!list.length) {
       grid.innerHTML = `
         <div class="empty-state">
           <div class="icon">🔭</div>
           <h3>No activities found</h3>
-          <p>Try searching for a different keyword, category, or city.</p>
+          <p>Try broadening your search term or category filter.</p>
         </div>`;
       return;
     }
 
     grid.innerHTML = list.map(a => {
-      const isAdded = addedIds.has(a.id);
-      const isFree  = a.cost === 0;
+      const isSelected = selectedActivityIds.has(a.id);
+      const isFree     = a.cost === 0;
+
       return `
-        <div class="activity-card" id="card-${a.id}">
-          <div class="card-top">
-            <h3>${escHtml(a.name)}</h3>
+        <div class="activity-card ${isSelected ? 'selected' : ''}" id="card-${a.id}">
+
+          <div class="selected-ribbon">✓ Selected</div>
+
+          <!-- Banner Header -->
+          <div class="card-banner cat-${a.category}">
+            <span class="banner-icon">${categoryIcon(a.category)}</span>
             <span class="city-chip">📍 ${escHtml(a.city)}</span>
           </div>
 
-          <span class="badge ${badgeClass(a.category)}" style="align-self:flex-start">${escHtml(a.category)}</span>
+          <div class="card-body">
 
-          <p class="card-desc">${escHtml(a.description || 'Discover incredible local sights and culture.')}</p>
-
-          <div class="card-meta">
-            <span>⏱ ${escHtml(a.duration)}</span>
-            ${a.preferred_time ? `<span>🕒 ${escHtml(a.preferred_time)}</span>` : ''}
-          </div>
-
-          <div class="card-bottom">
-            <div class="price ${isFree ? '' : 'paid'}">
-              ${isFree
-                ? '<span style="color:var(--success)">FREE</span>'
-                : `$${a.cost.toFixed(2)} <sub>per person</sub>`}
+            <div class="card-title-row">
+              <h3>${escHtml(a.name)}</h3>
+              <span class="badge ${badgeClass(a.category)}">${escHtml(a.category)}</span>
             </div>
-            <button
-              class="add-btn ${isAdded ? 'added' : ''}"
-              id="btn-${a.id}"
-              onclick="addActivity(${a.id}, \`${escJs(a.name)}\`)"
-            >
-              ${isAdded ? '✅ Added' : '➕ Add Activity'}
-            </button>
-          </div>
+
+            <p class="card-desc">${escHtml(a.description || 'Explore local landmark experiences and culture.')}</p>
+
+            <div class="card-meta-pills">
+              <div class="meta-pill">⏱ ${escHtml(a.duration)}</div>
+              ${a.preferred_time ? `<div class="meta-pill">🕒 ${escHtml(a.preferred_time)}</div>` : ''}
+            </div>
+
+            <div class="card-bottom">
+              <div class="price-tag ${isFree ? '' : 'paid'}">
+                ${isFree ? '<span style="color:var(--success)">FREE</span>' : `$${a.cost.toFixed(2)} <sub>per person</sub>`}
+              </div>
+
+              <button
+                class="select-btn ${isSelected ? 'selected' : 'unselected'}"
+                id="btn-${a.id}"
+                onclick="toggleActivitySelection(${a.id}, \`${escJs(a.name)}\`)"
+              >
+                ${isSelected ? '✓ Selected' : '＋ Add Activity'}
+              </button>
+            </div>
+
+          </div><!-- /card-body -->
+
         </div>
       `;
     }).join('');
   }
 
-  /* ── Add activity to trip ── */
-  async function addActivity(id, name) {
-    const btn = document.getElementById(`btn-${id}`);
-    if (!btn || btn.classList.contains('added')) return;
+  /* ── Toggle Activity Selection (Add / Remove) ── */
+  async function toggleActivitySelection(id, name) {
+    const card = document.getElementById(`card-${id}`);
+    const btn  = document.getElementById(`btn-${id}`);
+    if (!btn) return;
 
-    btn.textContent = '⏳ Adding...';
-    btn.style.opacity = '.7';
+    const isCurrentlySelected = selectedActivityIds.has(id);
+    btn.disabled = true;
+    btn.textContent = '⏳ Updating...';
 
-    try {
-      const res  = await fetch(`/api/trips/${activeTripId}/activities`, {
-        method:  'POST',
-        headers: {'Content-Type': 'application/json'},
-        body:    JSON.stringify({activity_id: id, day_number: 1})
-      });
-      const json = await res.json();
+    if (!isCurrentlySelected) {
+      // Add Activity
+      try {
+        const res = await fetch(`/api/trips/${activeTripId}/activities`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ activity_id: id, day_number: 1 })
+        });
+        const json = await res.json();
 
-      if (json.success) {
-        addedIds.add(id);
-        btn.textContent = '✅ Added';
-        btn.classList.add('added');
-        btn.style.opacity = '1';
-        showToast(`✅ "${name}" added to your trip!`, 'green');
-      } else {
-        btn.textContent = '➕ Add Activity';
-        btn.style.opacity = '1';
-        showToast('❌ ' + (json.message || 'Could not add activity.'), 'red');
+        if (json.success) {
+          selectedActivityIds.add(id);
+          card.classList.add('selected');
+          btn.className = 'select-btn selected';
+          btn.textContent = '✓ Selected';
+          btn.disabled = false;
+          showToast(`✅ "${name}" added to trip!`, 'green');
+        } else {
+          btn.className = 'select-btn unselected';
+          btn.textContent = '＋ Add Activity';
+          btn.disabled = false;
+          showToast('❌ ' + json.message, 'red');
+        }
+      } catch(e) {
+        btn.className = 'select-btn unselected';
+        btn.textContent = '＋ Add Activity';
+        btn.disabled = false;
+        showToast('❌ Server error adding activity.', 'red');
       }
-    } catch(err) {
-      btn.textContent = '➕ Add Activity';
-      btn.style.opacity = '1';
-      showToast('❌ Server error. Try again.', 'red');
+    } else {
+      // Remove Activity
+      try {
+        const res = await fetch(`/api/trips/${activeTripId}/activities/${id}`, {
+          method: 'DELETE'
+        });
+        const json = await res.json();
+
+        if (json.success) {
+          selectedActivityIds.delete(id);
+          card.classList.remove('selected');
+          btn.className = 'select-btn unselected';
+          btn.textContent = '＋ Add Activity';
+          btn.disabled = false;
+          showToast(`✅ Removed "${name}"`, 'green');
+        } else {
+          btn.className = 'select-btn selected';
+          btn.textContent = '✓ Selected';
+          btn.disabled = false;
+          showToast('❌ ' + json.message, 'red');
+        }
+      } catch(e) {
+        btn.className = 'select-btn selected';
+        btn.textContent = '✓ Selected';
+        btn.disabled = false;
+        showToast('❌ Server error removing activity.', 'red');
+      }
     }
   }
 
-  /* ── Toast notification ── */
+  /* ── Toast ── */
   let toastTimer;
   function showToast(msg, type = 'green') {
     clearTimeout(toastTimer);
     toastEl.textContent = msg;
     toastEl.className   = `show ${type}`;
-    toastTimer = setTimeout(() => { toastEl.className = ''; }, 3200);
+    toastTimer = setTimeout(() => { toastEl.className = ''; }, 3000);
   }
 
   /* ── Helpers ── */
@@ -362,8 +490,11 @@
     return String(str || '').replace(/\\/g,'\\\\').replace(/`/g,'\\`');
   }
 
-  /* ── Initial load ── */
-  loadActivities();
+  /* ── Init ── */
+  (async () => {
+    await loadTripSelectionState();
+    await loadActivities();
+  })();
 </script>
 
 </body>
