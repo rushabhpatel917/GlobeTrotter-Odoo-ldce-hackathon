@@ -77,16 +77,17 @@ def init_db():
     except sqlite3.OperationalError:
         pass  # Column already exists
 
-    # Trip-Activities join table — M1/M2
+    # Trip-Activities join table — M1/M2/M3
     c.execute('''
         CREATE TABLE IF NOT EXISTS trip_activities (
-            id          INTEGER PRIMARY KEY AUTOINCREMENT,
-            trip_id     INTEGER NOT NULL,
-            activity_id INTEGER NOT NULL,
-            stop_id     INTEGER,
-            day_number  INTEGER DEFAULT 1,
+            id            INTEGER PRIMARY KEY AUTOINCREMENT,
+            trip_id       INTEGER NOT NULL,
+            activity_id   INTEGER NOT NULL,
+            stop_id       INTEGER,
+            day_number    INTEGER DEFAULT 1,
+            activity_date TEXT,
             activity_time TEXT,
-            notes       TEXT,
+            notes         TEXT,
             FOREIGN KEY (trip_id)     REFERENCES trips(id),
             FOREIGN KEY (activity_id) REFERENCES activities(id),
             FOREIGN KEY (stop_id)     REFERENCES trip_stops(id)
@@ -100,6 +101,10 @@ def init_db():
         pass
     try:
         c.execute('ALTER TABLE trip_activities ADD COLUMN activity_time TEXT')
+    except sqlite3.OperationalError:
+        pass
+    try:
+        c.execute('ALTER TABLE trip_activities ADD COLUMN activity_date TEXT')
     except sqlite3.OperationalError:
         pass
 
@@ -127,7 +132,7 @@ def init_db():
         conn.commit()
 
     conn.close()
-    print('[OK] Database initialized with column migrations.')
+    print('[OK] Database initialized with activity_date migration.')
 
 
 if __name__ == '__main__':

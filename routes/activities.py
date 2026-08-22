@@ -35,6 +35,28 @@ def seed_activities():
     db.close()
 
 
+def normalize_to_24h(time_str):
+    """Helper to convert '09:00 AM' or '02:00 PM' to '09:00' or '14:00' for proper chronological sorting."""
+    if not time_str:
+        return '00:00'
+    ts = time_str.strip().upper()
+    try:
+        if 'AM' in ts or 'PM' in ts:
+            is_pm = 'PM' in ts
+            clean = ts.replace('AM', '').replace('PM', '').strip()
+            parts = clean.split(':')
+            hrs   = int(parts[0])
+            mins  = int(parts[1]) if len(parts) > 1 else 0
+            if is_pm and hrs < 12:
+                hrs += 12
+            elif not is_pm and hrs == 12:
+                hrs = 0
+            return f"{hrs:02d}:{mins:02d}"
+        return ts
+    except Exception:
+        return time_str
+
+
 # ── GET /api/activities  — List all activities ────────────────
 @activities_bp.route('/activities', methods=['GET'])
 def get_activities():
@@ -106,6 +128,7 @@ def add_activity_to_trip(trip_id):
     activity_id = d.get('activity_id')
     stop_id     = d.get('stop_id')
     day_number  = d.get('day_number', 1)
+    act_date    = d.get('activity_date') or d.get('date', '')
     act_time    = d.get('activity_time') or d.get('time', '')
     notes       = d.get('notes', '')
 
@@ -118,24 +141,27 @@ def add_activity_to_trip(trip_id):
         db.close()
         return jsonify({'success': False, 'message': 'Activity not found'}), 404
 
-    # If stop_id was not provided, check if trip has a stop for this activity's city
     if not stop_id and activity['city']:
         match_stop = db.execute(
-            'SELECT id FROM trip_stops WHERE trip_id = ? AND LOWER(city) = LOWER(?) ORDER BY stop_order ASC LIMIT 1',
+            'SELECT id, start_date FROM trip_stops WHERE trip_id = ? AND LOWER(city) = LOWER(?) ORDER BY stop_order ASC LIMIT 1',
             (trip_id, activity['city'])
         ).fetchone()
         if match_stop:
             stop_id = match_stop['id']
+            if not act_date and match_stop['start_date']:
+                act_date = match_stop['start_date']
+
+    if not act_time and activity['preferred_time']:
+        act_time = activity['preferred_time']
 
     cursor = db.execute(
-        '''INSERT INTO trip_activities (trip_id, activity_id, stop_id, day_number, activity_time, notes)
-           VALUES (?, ?, ?, ?, ?, ?)''',
-        (trip_id, activity_id, stop_id, day_number, act_time, notes)
+        '''INSERT INTO trip_activities (trip_id, activity_id, stop_id, day_number, activity_date, activity_time, notes)
+           VALUES (?, ?, ?, ?, ?, ?, ?)''',
+        (trip_id, activity_id, stop_id, day_number, act_date, act_time, notes)
     )
     link_id = cursor.lastrowid
     db.commit()
 
-    # Retrieve stop city if stop_id is set
     stop_city = activity['city']
     if stop_id:
         srow = db.execute('SELECT city FROM trip_stops WHERE id = ?', (stop_id,)).fetchone()
@@ -153,22 +179,175 @@ def add_activity_to_trip(trip_id):
             'activity_id': activity_id,
             'stop_id': stop_id,
             'day_number': day_number,
-            'activity_time': act_time,
+            'date': act_date,
+            'time': act_time,
             'name': activity['name'],
+            'cost': activity['cost'],
+            'duration': activity['duration'],
             'city': stop_city
         }
     }), 201
+
+
+# ── ITINERARY DATA ENGINE ENDPOINTS (M1 Turn 4) ──────────────────────
+
+# GET /api/trips/<trip_id>/itinerary — Retrieve activities organized by Trip -> Date -> City -> Activity
+@activities_bp.route('/trips/<int:trip_id>/itinerary', methods=['GET'])
+def get_trip_itinerary(trip_id):
+    """
+    Itinerary Data Engine:
+    Organizes trip activities chronologically by:
+    Trip -> Date -> City -> Activity
+
+    Each activity item contains:
+    - Date (e.g. 2026-09-12)
+    - Time (e.g. 09:00 AM)
+    - City (e.g. Paris)
+    - Name (e.g. Eiffel Tower Summit Tour)
+    - Cost (e.g. 35.0)
+    - Duration (e.g. 2.5 hours)
+    """
+    db   = get_db()
+    trip = db.execute('SELECT * FROM trips WHERE id = ?', (trip_id,)).fetchone()
+
+    if not trip:
+        db.close()
+        return jsonify({'success': False, 'message': 'Trip not found'}), 404
+
+    # Fetch raw itinerary activities
+    raw_activities = db.execute(
+        '''SELECT 
+            ta.id as trip_activity_id,
+            ta.trip_id,
+            ta.activity_id,
+            ta.stop_id,
+            ta.day_number,
+            COALESCE(NULLIF(ta.activity_date, ''), s.start_date, t.start_date, 'Unscheduled') as date,
+            COALESCE(NULLIF(ta.activity_time, ''), a.preferred_time, '09:00 AM') as time,
+            COALESCE(s.city, a.city, 'Unknown') as city,
+            COALESCE(s.country, '') as country,
+            a.name,
+            a.category,
+            a.description,
+            a.duration,
+            a.cost,
+            ta.notes
+           FROM trip_activities ta
+           JOIN activities a ON ta.activity_id = a.id
+           JOIN trips t ON ta.trip_id = t.id
+           LEFT JOIN trip_stops s ON ta.stop_id = s.id
+           WHERE ta.trip_id = ?''',
+        (trip_id,)
+    ).fetchall()
+
+    db.close()
+    flat_items = [dict(r) for r in raw_activities]
+
+    # Add normalized 24h time for sorting
+    for item in flat_items:
+        item['time_24h'] = normalize_to_24h(item['time'])
+
+    # Sort strictly chronologically by Date (ASC), 24h Time (ASC), and Name
+    flat_items.sort(key=lambda x: (x['date'], x['time_24h'], x['name']))
+
+    # Organize into nested hierarchy: Date -> City -> Activities
+    date_map = {}
+    for item in flat_items:
+        d = item['date']
+        c = item['city']
+
+        if d not in date_map:
+            date_map[d] = {}
+        if c not in date_map[d]:
+            date_map[d][c] = []
+
+        date_map[d][c].append({
+            'trip_activity_id': item['trip_activity_id'],
+            'activity_id': item['activity_id'],
+            'name': item['name'],
+            'category': item['category'],
+            'description': item['description'],
+            'duration': item['duration'],
+            'cost': item['cost'],
+            'city': item['city'],
+            'date': item['date'],
+            'time': item['time'],
+            'notes': item['notes']
+        })
+
+    structured_itinerary = []
+    for d in sorted(date_map.keys()):
+        city_blocks = []
+        for c_name in sorted(date_map[d].keys()):
+            city_blocks.append({
+                'city': c_name,
+                'activities': date_map[d][c_name]
+            })
+        structured_itinerary.append({
+            'date': d,
+            'cities': city_blocks
+        })
+
+    return jsonify({
+        'success': True,
+        'data': {
+            'trip_id': trip['id'],
+            'trip_title': trip['title'],
+            'start_date': trip['start_date'],
+            'end_date': trip['end_date'],
+            'itinerary': structured_itinerary,
+            'chronological': flat_items
+        }
+    })
+
+
+# PUT /api/trip-activities/<link_id>/schedule — Update activity date, time, or stop
+@activities_bp.route('/trip-activities/<int:link_id>/schedule', methods=['PUT'])
+def schedule_trip_activity(link_id):
+    """Schedule or update date, time, stop, day_number, or notes for a trip activity link."""
+    d        = request.get_json() or {}
+    act_date = d.get('activity_date') or d.get('date')
+    act_time = d.get('activity_time') or d.get('time')
+    stop_id  = d.get('stop_id')
+    day_num  = d.get('day_number')
+    notes    = d.get('notes')
+
+    db   = get_db()
+    link = db.execute('SELECT * FROM trip_activities WHERE id = ?', (link_id,)).fetchone()
+    if not link:
+        db.close()
+        return jsonify({'success': False, 'message': 'Trip activity link not found'}), 404
+
+    new_date = act_date if act_date is not None else link['activity_date']
+    new_time = act_time if act_time is not None else link['activity_time']
+    new_stop = stop_id if stop_id is not None else link['stop_id']
+    new_day  = day_num if day_num is not None else link['day_number']
+    new_note = notes if notes is not None else link['notes']
+
+    db.execute(
+        '''UPDATE trip_activities
+           SET activity_date = ?, activity_time = ?, stop_id = ?, day_number = ?, notes = ?
+           WHERE id = ?''',
+        (new_date, new_time, new_stop, new_day, new_note, link_id)
+    )
+    db.commit()
+    updated = db.execute('SELECT * FROM trip_activities WHERE id = ?', (link_id,)).fetchone()
+    db.close()
+
+    return jsonify({'success': True, 'message': 'Activity schedule updated successfully!', 'data': dict(updated)})
 
 
 # ── POST /api/activities/<aid>/add  — Legacy add route compatibility ──
 @activities_bp.route('/activities/<int:aid>/add', methods=['POST'])
 def add_to_trip_legacy(aid):
     """Legacy route to add activity to trip."""
-    d       = request.get_json() or {}
-    trip_id = d.get('trip_id', 1)
-    day_num = d.get('day_number', 1)
-    stop_id = d.get('stop_id')
-    notes   = d.get('notes', '')
+    d        = request.get_json() or {}
+    trip_id  = d.get('trip_id', 1)
+    day_num  = d.get('day_number', 1)
+    stop_id  = d.get('stop_id')
+    act_date = d.get('activity_date') or d.get('date', '')
+    act_time = d.get('activity_time') or d.get('time', '')
+    notes    = d.get('notes', '')
 
     db = get_db()
     activity = db.execute('SELECT * FROM activities WHERE id=?', (aid,)).fetchone()
@@ -178,15 +357,20 @@ def add_to_trip_legacy(aid):
 
     if not stop_id and activity['city']:
         match_stop = db.execute(
-            'SELECT id FROM trip_stops WHERE trip_id = ? AND LOWER(city) = LOWER(?) LIMIT 1',
+            'SELECT id, start_date FROM trip_stops WHERE trip_id = ? AND LOWER(city) = LOWER(?) LIMIT 1',
             (trip_id, activity['city'])
         ).fetchone()
         if match_stop:
             stop_id = match_stop['id']
+            if not act_date and match_stop['start_date']:
+                act_date = match_stop['start_date']
+
+    if not act_time and activity['preferred_time']:
+        act_time = activity['preferred_time']
 
     db.execute(
-        'INSERT INTO trip_activities (trip_id, activity_id, stop_id, day_number, notes) VALUES (?,?,?,?,?)',
-        (trip_id, aid, stop_id, day_num, notes)
+        'INSERT INTO trip_activities (trip_id, activity_id, stop_id, day_number, activity_date, activity_time, notes) VALUES (?,?,?,?,?,?,?)',
+        (trip_id, aid, stop_id, day_num, act_date, act_time, notes)
     )
     db.commit()
     db.close()
