@@ -474,12 +474,12 @@
 
           <div class="summary-item">
             <div class="summary-label">Estimated Total Cost</div>
-            <div class="summary-value green">$${totalCost.toFixed(2)}</div>
+            <div class="summary-value green">₹${totalCost.toFixed(2)}</div>
           </div>
 
           <div class="summary-item">
             <div class="summary-label">Average Daily Cost</div>
-            <div class="summary-value green">$${avgDaily.toFixed(2)} / day</div>
+            <div class="summary-value green">₹${avgDaily.toFixed(2)} / day</div>
           </div>
         </div>
 
@@ -571,7 +571,7 @@
                                   <div class="act-name">🎟️ ${escHtml(a.name)}</div>
                                   <div class="act-meta">
                                     <span>⏱ ${escHtml(a.duration)}</span>
-                                    <span>💰 ${a.cost > 0 ? '$' + a.cost.toFixed(2) : 'Free'}</span>
+                                    <span>💰 ${a.cost > 0 ? '₹' + a.cost.toFixed(2) : 'Free'}</span>
                                     
                                     ${actDate ? `<span class="act-schedule-badge">📅 ${escHtml(actDate)}</span>` : '<span style="color:var(--warning);font-size:0.78rem">📅 Date Pending</span>'}
                                     ${actTime ? `<span class="act-schedule-badge">🕒 ${escHtml(actTime)}</span>` : '<span style="color:var(--warning);font-size:0.78rem">🕒 Time Pending</span>'}

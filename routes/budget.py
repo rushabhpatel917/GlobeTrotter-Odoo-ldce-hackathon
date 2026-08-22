@@ -170,7 +170,7 @@ def add_trip_expense(trip_id):
 
     return jsonify({
         'success': True,
-        'message': f'Added expense "{title}" (${cost:.2f})',
+        'message': f'Added expense "{title}" (₹{cost:.2f})',
         'data': {
             'expense_id': expense_id,
             'budget': updated_budget

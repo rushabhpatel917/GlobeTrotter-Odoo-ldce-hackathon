@@ -177,19 +177,19 @@
     <div class="kpi-row" id="kpiRow">
       <div class="kpi-card hero-kpi">
         <div class="kpi-lbl">Total Trip Cost</div>
-        <div class="kpi-val green" id="totalCostVal">$0.00</div>
+        <div class="kpi-val green" id="totalCostVal">₹0.00</div>
         <div class="kpi-sub" id="totalCostSub">Across all 5 budget categories</div>
       </div>
 
       <div class="kpi-card">
         <div class="kpi-lbl">Average Cost / Day</div>
-        <div class="kpi-val cyan" id="avgDayVal">$0.00</div>
+        <div class="kpi-val cyan" id="avgDayVal">₹0.00</div>
         <div class="kpi-sub" id="durationSub">Based on 1 trip day</div>
       </div>
 
       <div class="kpi-card">
         <div class="kpi-lbl">Activities Budget</div>
-        <div class="kpi-val" id="activitiesCostVal">$0.00</div>
+        <div class="kpi-val" id="activitiesCostVal">₹0.00</div>
         <div class="kpi-sub" id="activitiesSub">Auto-calculated from itinerary</div>
       </div>
     </div>
@@ -247,7 +247,7 @@
 
       <div class="form-row">
         <div class="form-group">
-          <label>Cost ($) *</label>
+          <label>Cost (₹) *</label>
           <input type="number" id="expCost" step="0.01" min="0" placeholder="0.00"/>
         </div>
         <div class="form-group">
@@ -301,12 +301,12 @@
 
   function renderDashboard(data) {
     document.getElementById('tripTitleLabel').textContent = `💰 Budget: ${data.trip_title}`;
-    document.getElementById('totalCostVal').textContent   = `$${data.total_cost.toFixed(2)}`;
-    document.getElementById('avgDayVal').textContent      = `$${data.avg_cost_per_day.toFixed(2)} / day`;
+    document.getElementById('totalCostVal').textContent   = `₹${data.total_cost.toFixed(2)}`;
+    document.getElementById('avgDayVal').textContent      = `₹${data.avg_cost_per_day.toFixed(2)} / day`;
     document.getElementById('durationSub').textContent     = `Calculated over ${data.duration_days} day${data.duration_days !== 1 ? 's' : ''}`;
 
     const actCost = data.category_totals.Activities || 0;
-    document.getElementById('activitiesCostVal').textContent = `$${actCost.toFixed(2)}`;
+    document.getElementById('activitiesCostVal').textContent = `₹${actCost.toFixed(2)}`;
     document.getElementById('activitiesSub').textContent     = `${(data.activities_breakdown || []).length} itinerary activit${(data.activities_breakdown || []).length !== 1 ? 'ies' : 'y'}`;
 
     // Render Category Breakdown Bars
@@ -324,7 +324,7 @@
           <div class="cat-meta-row">
             <div class="cat-name-tag">${icon} ${catKey}</div>
             <div class="cat-cost-tag">
-              $${cost.toFixed(2)}
+              ₹${cost.toFixed(2)}
               <span>(${pct}%)</span>
             </div>
           </div>
@@ -357,7 +357,7 @@
             <th>Category</th>
             <th>Title / Description</th>
             <th>Notes</th>
-            <th>Cost ($)</th>
+            <th>Cost (₹)</th>
             <th style="text-align:right">Action</th>
           </tr>
         </thead>
@@ -369,7 +369,7 @@
               </td>
               <td style="font-weight:700;color:#ffffff">${escHtml(e.title)}</td>
               <td style="color:var(--muted)">${escHtml(e.notes || '-')}</td>
-              <td style="font-weight:800;color:var(--success)">$${e.cost.toFixed(2)}</td>
+              <td style="font-weight:800;color:var(--success)">₹${e.cost.toFixed(2)}</td>
               <td style="text-align:right">
                 <button class="btn btn-outline btn-sm" onclick="deleteExpense(${e.id})">🗑️ Delete</button>
               </td>

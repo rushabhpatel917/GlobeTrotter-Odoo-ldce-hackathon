@@ -244,12 +244,12 @@
 
         <div class="sum-card">
           <div class="sum-lbl">Estimated Total Budget</div>
-          <div class="sum-val green">$${totalCost.toFixed(2)}</div>
+          <div class="sum-val green">₹${totalCost.toFixed(2)}</div>
         </div>
 
         <div class="sum-card">
           <div class="sum-lbl">Average Cost / Day</div>
-          <div class="sum-val green">$${avgDaily.toFixed(2)} / day</div>
+          <div class="sum-val green">₹${avgDaily.toFixed(2)} / day</div>
         </div>
       </div>
     `;
@@ -331,7 +331,7 @@
 
                     <div style="text-align:right">
                       <div class="cost-badge ${a.cost > 0 ? 'paid' : ''}">
-                        ${a.cost > 0 ? '$' + a.cost.toFixed(2) : 'FREE'}
+                        ${a.cost > 0 ? '₹' + a.cost.toFixed(2) : 'FREE'}
                       </div>
                     </div>
                   </div>
