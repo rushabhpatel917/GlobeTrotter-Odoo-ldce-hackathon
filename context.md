@@ -1,6 +1,6 @@
 # PROJECT CONTEXT — GlobeTrotter
 # Odoo x LDCE Ahmedabad Hackathon 2026
-# ── Paste this file at the start of EVERY AI chat session ──
+
 
 ## Problem Statement
 GlobeTrotter — Smart Travel Planning Web Application
