@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta name="description" content="GlobeTrotter Trip Details — Multi-city destination itinerary, city stops, and assigned activities."/>
-  <title>Trip Destinations & Activities — GlobeTrotter</title>
+  <meta name="description" content="GlobeTrotter Trip Details — Multi-city destination itinerary, city stops, and activity scheduling."/>
+  <title>Trip Destinations & Activity Editing — GlobeTrotter</title>
   <link rel="stylesheet" href="/static/style.css"/>
   <style>
     .details-wrapper {
@@ -127,15 +127,22 @@
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius-sm);
-      padding: 14px 18px;
+      padding: 16px 20px;
       display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 10px; gap: 12px; flex-wrap: wrap;
+      margin-bottom: 12px; gap: 14px; flex-wrap: wrap;
     }
     .activity-row:last-child { margin-bottom: 0; }
 
-    .act-info { display: flex; align-items: center; gap: 12px; }
-    .act-name { font-size: 1rem; font-weight: 700; color: #f8fafc; }
-    .act-meta { font-size: 0.82rem; color: var(--muted); display: flex; gap: 12px; margin-top: 2px; }
+    .act-info { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 260px; }
+    .act-name { font-size: 1.05rem; font-weight: 700; color: #f8fafc; margin-bottom: 4px; }
+    .act-meta { font-size: 0.83rem; color: var(--muted); display: flex; gap: 14px; flex-wrap: wrap; }
+    .act-schedule-badge {
+      background: rgba(56,189,248,.12); color: var(--primary);
+      border: 1px solid rgba(56,189,248,.3); padding: 3px 8px; border-radius: 6px;
+      font-weight: 600; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 4px;
+    }
+
+    .act-actions { display: flex; align-items: center; gap: 8px; }
 
     .empty-stop-activities {
       text-align: center; padding: 24px; color: var(--muted); font-size: 0.88rem;
@@ -149,18 +156,19 @@
     }
     .empty-destinations .icon { font-size: 3rem; margin-bottom: 12px; }
 
-    /* Modal Form */
+    /* Modal Form Overlay */
     .modal-overlay {
       position: fixed; inset: 0;
-      background: rgba(0,0,0,.65); backdrop-filter: blur(4px);
+      background: rgba(0,0,0,.68); backdrop-filter: blur(4px);
       display: none; align-items: center; justify-content: center;
       z-index: 500;
     }
     .modal-overlay.open { display: flex; }
     .modal {
       background: var(--surface); border: 1px solid var(--border);
-      border-radius: 16px; padding: 32px; width: 100%; max-width: 480px;
+      border-radius: 18px; padding: 32px; width: 100%; max-width: 480px;
       animation: slideUp .25s ease;
+      box-shadow: 0 16px 48px rgba(0,0,0,.6);
     }
     @keyframes slideUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
     .modal h3 { font-size: 1.25rem; font-weight: 700; margin-bottom: 20px; }
@@ -197,7 +205,7 @@
 
   </div>
 
-  <!-- Modal: Add or Edit Destination Stop -->
+  <!-- Modal 1: Add or Edit Destination Stop -->
   <div class="modal-overlay" id="stopModal" onclick="closeStopModalOutside(event)">
     <div class="modal">
       <h3 id="modalTitle">📍 Add Destination</h3>
@@ -224,6 +232,36 @@
       <div class="modal-footer">
         <button class="btn btn-outline btn-sm" onclick="closeStopModal()">Cancel</button>
         <button class="btn btn-primary btn-sm" onclick="saveStop()">Save Destination →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: Edit Itinerary Activity (Date, Time, Notes) -->
+  <div class="modal-overlay" id="scheduleModal" onclick="closeScheduleModalOutside(event)">
+    <div class="modal">
+      <h3 id="schedModalTitle">⏰ Edit Activity Schedule</h3>
+      <input type="hidden" id="schedLinkId" value=""/>
+      <p id="schedActName" style="color:var(--primary);font-weight:700;margin-bottom:16px"></p>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Assigned Date</label>
+          <input type="date" id="schedDate"/>
+        </div>
+        <div class="form-group">
+          <label>Assigned Time</label>
+          <input type="text" id="schedTime" placeholder="e.g. 09:30 AM, 14:00"/>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Notes / Reminders (Optional)</label>
+        <input type="text" id="schedNotes" placeholder="e.g. Bring tickets, wear comfortable shoes"/>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-outline btn-sm" onclick="closeScheduleModal()">Cancel</button>
+        <button class="btn btn-primary btn-sm" onclick="saveSchedule()">Save Schedule →</button>
       </div>
     </div>
   </div>
@@ -371,8 +409,8 @@
                     <div class="stop-header-actions">
                       <button class="btn-icon" title="Move Up" onclick="reorderStop(${s.id}, ${idx}, -1)" ${idx === 0 ? 'disabled style="opacity:0.4"' : ''}>▲</button>
                       <button class="btn-icon" title="Move Down" onclick="reorderStop(${s.id}, ${idx}, 1)" ${idx === stops.length - 1 ? 'disabled style="opacity:0.4"' : ''}>▼</button>
-                      <button class="btn btn-outline btn-sm" onclick="openEditStopModal(${s.id}, '${escJs(s.city)}', '${escJs(s.country || '')}', '${s.start_date || ''}', '${s.end_date || ''}')">✏️ Edit</button>
-                      <button class="btn btn-outline btn-sm" onclick="removeStop(${s.id}, '${escJs(s.city)}')">🗑️ Remove Stop</button>
+                      <button class="btn btn-outline btn-sm" onclick="openEditStopModal(${s.id}, '${escJs(s.city)}', '${escJs(s.country || '')}', '${s.start_date || ''}', '${s.end_date || ''}')">✏️ Edit Stop</button>
+                      <button class="btn btn-outline btn-sm" onclick="removeStop(${s.id}, '${escJs(s.city)}')">🗑️ Remove</button>
                     </div>
                   </div>
 
@@ -390,25 +428,36 @@
                       </div>
                     ` : `
                       <div>
-                        ${stopActs.map(a => `
-                          <div class="activity-row">
-                            <div class="act-info">
-                              <div>
-                                <div class="act-name">🎟️ ${escHtml(a.name)}</div>
-                                <div class="act-meta">
-                                  <span>⏱ ${escHtml(a.duration)}</span>
-                                  <span>💰 ${a.cost > 0 ? '$' + a.cost.toFixed(2) : 'Free'}</span>
-                                  ${a.notes ? `<span>📝 ${escHtml(a.notes)}</span>` : ''}
+                        ${stopActs.map(a => {
+                          const linkId   = a.trip_activity_id || a.id;
+                          const actDate  = a.activity_date || a.date || '';
+                          const actTime  = a.activity_time || a.time || '';
+                          const actNotes = a.notes || '';
+
+                          return `
+                            <div class="activity-row">
+                              <div class="act-info">
+                                <div>
+                                  <div class="act-name">🎟️ ${escHtml(a.name)}</div>
+                                  <div class="act-meta">
+                                    <span>⏱ ${escHtml(a.duration)}</span>
+                                    <span>💰 ${a.cost > 0 ? '$' + a.cost.toFixed(2) : 'Free'}</span>
+                                    
+                                    ${actDate ? `<span class="act-schedule-badge">📅 ${escHtml(actDate)}</span>` : '<span style="color:var(--warning);font-size:0.78rem">📅 Date Pending</span>'}
+                                    ${actTime ? `<span class="act-schedule-badge">🕒 ${escHtml(actTime)}</span>` : '<span style="color:var(--warning);font-size:0.78rem">🕒 Time Pending</span>'}
+                                    ${actNotes ? `<span>📝 ${escHtml(actNotes)}</span>` : ''}
+                                  </div>
                                 </div>
                               </div>
-                            </div>
 
-                            <div style="display:flex;align-items:center;gap:10px">
-                              <span class="badge ${badgeClass(a.category)}">${escHtml(a.category)}</span>
-                              <button class="btn btn-outline btn-sm" onclick="removeActivityFromStop(${s.id}, ${a.id || a.activity_id}, '${escJs(a.name)}')">🗑️</button>
+                              <div class="act-actions">
+                                <span class="badge ${badgeClass(a.category)}">${escHtml(a.category)}</span>
+                                <button class="btn btn-outline btn-sm" onclick="openScheduleModal(${linkId}, '${escJs(a.name)}', '${actDate}', '${actTime}', '${escJs(actNotes)}')">⏰ Schedule / Edit</button>
+                                <button class="btn btn-outline btn-sm" onclick="removeActivityFromStop(${s.id}, ${a.id || a.activity_id}, '${escJs(a.name)}', ${linkId})">🗑️</button>
+                              </div>
                             </div>
-                          </div>
-                        `).join('')}
+                          `;
+                        }).join('')}
                       </div>
                     `}
                   </div>
@@ -421,7 +470,50 @@
     `;
   }
 
-  /* ── Stop Modal Handlers ── */
+  /* ── Itinerary Activity Schedule Modal Handlers (M2 Turn 4) ── */
+  function openScheduleModal(linkId, actName, actDate, actTime, notes) {
+    document.getElementById('schedLinkId').value = linkId;
+    document.getElementById('schedActName').textContent = '🎟️ ' + actName;
+    document.getElementById('schedDate').value = actDate || '';
+    document.getElementById('schedTime').value = actTime || '';
+    document.getElementById('schedNotes').value = notes || '';
+    document.getElementById('scheduleModal').classList.add('open');
+  }
+
+  function closeScheduleModal() { document.getElementById('scheduleModal').classList.remove('open'); }
+  function closeScheduleModalOutside(e) {
+    if (e.target === document.getElementById('scheduleModal')) closeScheduleModal();
+  }
+
+  async function saveSchedule() {
+    const linkId = document.getElementById('schedLinkId').value;
+    const date   = document.getElementById('schedDate').value;
+    const time   = document.getElementById('schedTime').value.trim();
+    const notes  = document.getElementById('schedNotes').value.trim();
+
+    if (!linkId) return;
+
+    try {
+      const res = await fetch(`/api/trip-activities/${linkId}/schedule`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ activity_date: date, activity_time: time, notes: notes })
+      });
+      const json = await res.json();
+
+      if (json.success) {
+        closeScheduleModal();
+        showToast('✅ Activity schedule updated!', 'green');
+        loadTripDetails();
+      } else {
+        showToast('❌ ' + (json.message || 'Failed to update schedule.'), 'red');
+      }
+    } catch(e) {
+      showToast('❌ Server error updating schedule.', 'red');
+    }
+  }
+
+  /* ── Destination Stop Modal Handlers ── */
   function openAddStopModal() {
     document.getElementById('modalTitle').textContent = '📍 Add Destination Stop';
     document.getElementById('editStopId').value = '';
@@ -502,15 +594,19 @@
     }
   }
 
-  async function removeActivityFromStop(stopId, activityId, activityName) {
+  async function removeActivityFromStop(stopId, activityId, activityName, linkId) {
     if (!confirm(`Remove "${activityName}" from this city stop?`)) return;
 
     try {
-      let res = await fetch(`/api/trips/stops/${stopId}/activities/${activityId}`, { method: 'DELETE' });
+      let res;
+      if (linkId) {
+        res = await fetch(`/api/trip-activities/${linkId}`, { method: 'DELETE' });
+      } else {
+        res = await fetch(`/api/trips/stops/${stopId}/activities/${activityId}`, { method: 'DELETE' });
+      }
       let json = await res.json();
       
       if (!json.success) {
-        // Fallback to trip-wide activity remove
         res = await fetch(`/api/trips/${currentTripId}/activities/${activityId}`, { method: 'DELETE' });
         json = await res.json();
       }
