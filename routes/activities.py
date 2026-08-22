@@ -3,47 +3,42 @@ from database import get_db
 
 activities_bp = Blueprint('activities', __name__)
 
-# ── Sample data seeded on first load ──────────────────────────
+# ── High Quality Seed Dataset ──────────────────────────────────
 SAMPLE_ACTIVITIES = [
-    ('Eiffel Tower Visit',    'Sightseeing', 'Iconic iron lattice tower on the Champ de Mars in Paris',       '3 hours',   25.0, 'Paris'),
-    ('Louvre Museum',         'Culture',     "World's largest art museum and home to the Mona Lisa",           '4 hours',   17.0, 'Paris'),
-    ('Seine River Cruise',    'Experience',  'Scenic boat cruise along the Seine river past major landmarks',  '1.5 hours', 15.0, 'Paris'),
-    ('Montmartre Walk',       'Culture',     'Explore the artistic hilltop neighbourhood and Sacré-Cœur',     '2 hours',    0.0, 'Paris'),
-    ('Colosseum Tour',        'Sightseeing', 'Ancient amphitheatre at the heart of Rome — gladiators fought here', '2 hours', 16.0, 'Rome'),
-    ('Vatican Museums',       'Culture',     'Breathtaking museums housing Sistine Chapel & Renaissance art', '3 hours',   20.0, 'Rome'),
-    ('Trevi Fountain',        'Sightseeing', 'Baroque masterpiece — toss a coin and make a wish!',            '1 hour',     0.0, 'Rome'),
-    ('Sagrada Familia',       'Culture',     "Gaudi's unfinished basilica — a UNESCO World Heritage Site",    '2 hours',   26.0, 'Barcelona'),
-    ('Park Güell',            'Nature',      'Colorful mosaic park with sweeping city views by Gaudi',        '2 hours',   10.0, 'Barcelona'),
-    ('La Boqueria Market',    'Experience',  'Famous public market bursting with fresh food and local flavors','1 hour',     0.0, 'Barcelona'),
-    ('Big Ben & Westminster', 'Sightseeing', 'Iconic clock tower standing beside the Houses of Parliament',   '1 hour',     0.0, 'London'),
-    ('British Museum',        'Culture',     'Free world-famous museum covering 2 million years of history', '3 hours',    0.0, 'London'),
-    ('Tower of London',       'Sightseeing', 'Historic castle on the Thames housing the Crown Jewels',        '2 hours',   30.0, 'London'),
-    ('Tokyo Tower',           'Sightseeing', 'Communications and observation tower inspired by Eiffel Tower', '2 hours',   12.0, 'Tokyo'),
-    ('Senso-ji Temple',       'Culture',     "Tokyo's oldest Buddhist temple in the Asakusa district",        '1.5 hours',  0.0, 'Tokyo'),
-    ('Shibuya Crossing',      'Experience',  'World-famous scramble crossing — busiest pedestrian crossing',  '30 mins',    0.0, 'Tokyo'),
-    ('Taj Mahal',             'Sightseeing', 'Ivory-white marble mausoleum on the banks of the Yamuna river','3 hours',   15.0, 'Agra'),
-    ('Dubai Desert Safari',   'Adventure',   'Off-road dune bashing followed by camel ride and BBQ dinner',  '6 hours',   60.0, 'Dubai'),
-    ('Burj Khalifa Deck',     'Sightseeing', "Observation deck on the world's tallest building at 555m",     '1.5 hours', 35.0, 'Dubai'),
-    ('Santorini Sunset',      'Experience',  'Watch the legendary sunset from Oia village over the caldera', '2 hours',    0.0, 'Santorini'),
+    ('Eiffel Tower Summit Tour',      'Sightseeing', 'Iconic iron grid tower on Champ de Mars offering panoramic city views.', '2.5 hours', 35.0, 'Paris', '09:00 AM'),
+    ('Louvre Museum Guided Tour',     'Culture',     "Explore Mona Lisa and thousands of world-famous masterworks.",          '3 hours',   45.0, 'Paris', '10:30 AM'),
+    ('Paris Gourmet Food Tour',        'Experience',  'Taste authentic croissants, artisan cheeses, and fine French wines.',    '3.5 hours', 75.0, 'Paris', '01:00 PM'),
+    ('Colosseum & Forum Tour',        'Culture',     'Step back in time inside the ancient amphitheater of Rome.',             '3 hours',   50.0, 'Rome',  '09:30 AM'),
+    ('Rome City Walking Tour',        'Sightseeing', 'Discover Trevi Fountain, Pantheon, and Piazza Navona with a guide.',    '2 hours',   20.0, 'Rome',  '04:00 PM'),
+    ('Trastevere Evening Food Tour',  'Experience',  'Sample traditional Roman pasta, gelato, and Italian wines.',             '3 hours',   65.0, 'Rome',  '06:30 PM'),
+    ('Sensoji Temple Walking Tour',   'Culture',     "Tokyo's oldest ancient Buddhist temple and historic Nakamise street.",   '2 hours',   15.0, 'Tokyo', '10:00 AM'),
+    ('Tokyo Street Food Crawl',       'Experience',  'Yakitori, ramen, and matcha desserts in vibrant Shinjuku.',              '3 hours',   55.0, 'Tokyo', '05:30 PM'),
+    ('Sagrada Familia Fast-Track',    'Culture',     "Gaudí's unfinished cathedral masterpiece in Barcelona.",                 '2 hours',   38.0, 'Barcelona', '11:00 AM'),
+    ('Park Güell & Mosaic Walk',      'Nature',      'Colorful mosaic park with sweeping city and sea views by Gaudí.',        '2 hours',   14.0, 'Barcelona', '03:00 PM'),
+    ('Tower of London & Crown Jewels','Sightseeing', 'Historic castle on the Thames housing royal treasures.',                '2.5 hours', 32.0, 'London', '10:00 AM'),
+    ('British Museum Highlights',     'Culture',     'World-famous museum covering 2 million years of human history.',         '3 hours',    0.0, 'London', '01:30 PM'),
+    ('Burj Khalifa At The Top',       'Sightseeing', "Observation deck on the world's tallest building at 555m.",             '1.5 hours', 45.0, 'Dubai',  '05:00 PM'),
+    ('Dubai Desert Safari & BBQ',     'Adventure',   'Dune bashing, camel riding, falconry, and starlit BBQ dinner.',          '6 hours',   70.0, 'Dubai',  '03:00 PM')
 ]
 
 
 def seed_activities():
-    """Seed sample activities if the table is empty."""
+    """Seed sample activities if table is empty."""
     db    = get_db()
     count = db.execute('SELECT COUNT(*) FROM activities').fetchone()[0]
     if count == 0:
         db.executemany(
-            'INSERT INTO activities (name, category, description, duration, cost, city) VALUES (?,?,?,?,?,?)',
+            'INSERT INTO activities (name, category, description, duration, cost, city, preferred_time) VALUES (?,?,?,?,?,?,?)',
             SAMPLE_ACTIVITIES
         )
         db.commit()
     db.close()
 
 
-# ── GET /api/activities ────────────────────────────────────────
+# ── GET /api/activities  — List all activities ────────────────
 @activities_bp.route('/activities', methods=['GET'])
 def get_activities():
+    """List activities with optional city, category, and query filters."""
     seed_activities()
     city = request.args.get('city', '').strip()
     q    = request.args.get('q',    '').strip()
@@ -51,11 +46,13 @@ def get_activities():
 
     sql    = 'SELECT * FROM activities WHERE 1=1'
     params = []
+
     if city:
         sql += ' AND LOWER(city) LIKE ?'
         params.append(f'%{city.lower()}%')
     if q:
-        sql += ' AND LOWER(name) LIKE ?'
+        sql += ' AND (LOWER(name) LIKE ? OR LOWER(description) LIKE ?)'
+        params.append(f'%{q.lower()}%')
         params.append(f'%{q.lower()}%')
     if cat:
         sql += ' AND category = ?'
@@ -69,24 +66,128 @@ def get_activities():
     return jsonify({'success': True, 'data': [dict(r) for r in rows]})
 
 
-# ── POST /api/activities/<id>/add ─────────────────────────────
-@activities_bp.route('/activities/<int:aid>/add', methods=['POST'])
-def add_to_trip(aid):
-    d       = request.get_json() or {}
-    trip_id = d.get('trip_id',    1)
-    day_num = d.get('day_number', 1)
+# ── POST /api/activities  — Create new activity ───────────────
+@activities_bp.route('/activities', methods=['POST'])
+def create_activity():
+    """Create a new activity (Name, Description, Category, Duration, Cost, City/Stop, Preferred Time)."""
+    d    = request.get_json() or {}
+    name = (d.get('name') or '').strip()
+
+    if not name:
+        return jsonify({'success': False, 'message': 'Activity name is required'}), 400
+
+    category       = (d.get('category') or 'Sightseeing').strip()
+    description    = (d.get('description') or '').strip()
+    duration       = (d.get('duration') or '1 hour').strip()
+    cost           = float(d.get('cost') or 0)
+    city           = (d.get('city') or '').strip()
+    preferred_time = (d.get('preferred_time') or d.get('time') or '').strip()
 
     db = get_db()
-    # Verify activity exists
+    cursor = db.execute(
+        '''INSERT INTO activities (name, category, description, duration, cost, city, preferred_time)
+           VALUES (?, ?, ?, ?, ?, ?, ?)''',
+        (name, category, description, duration, cost, city, preferred_time)
+    )
+    activity_id = cursor.lastrowid
+    db.commit()
+
+    activity = db.execute('SELECT * FROM activities WHERE id = ?', (activity_id,)).fetchone()
+    db.close()
+
+    return jsonify({'success': True, 'message': 'Activity created successfully!', 'data': dict(activity)}), 201
+
+
+# ── POST /api/trips/<trip_id>/activities  — Add activity to trip/stop ──
+@activities_bp.route('/trips/<int:trip_id>/activities', methods=['POST'])
+def add_activity_to_trip(trip_id):
+    """Add an activity to a specific trip or stop."""
+    d           = request.get_json() or {}
+    activity_id = d.get('activity_id')
+    stop_id     = d.get('stop_id')
+    day_number  = d.get('day_number', 1)
+    act_time    = d.get('activity_time') or d.get('time', '')
+    notes       = d.get('notes', '')
+
+    if not activity_id:
+        return jsonify({'success': False, 'message': 'activity_id is required'}), 400
+
+    db = get_db()
+    activity = db.execute('SELECT * FROM activities WHERE id = ?', (activity_id,)).fetchone()
+    if not activity:
+        db.close()
+        return jsonify({'success': False, 'message': 'Activity not found'}), 404
+
+    cursor = db.execute(
+        '''INSERT INTO trip_activities (trip_id, activity_id, stop_id, day_number, activity_time, notes)
+           VALUES (?, ?, ?, ?, ?, ?)''',
+        (trip_id, activity_id, stop_id, day_number, act_time, notes)
+    )
+    link_id = cursor.lastrowid
+    db.commit()
+    db.close()
+
+    return jsonify({
+        'success': True,
+        'message': f'"{activity["name"]}" added to trip!',
+        'data': {
+            'id': link_id,
+            'trip_id': trip_id,
+            'activity_id': activity_id,
+            'stop_id': stop_id,
+            'day_number': day_number,
+            'activity_time': act_time,
+            'name': activity['name'],
+            'city': activity['city']
+        }
+    }), 201
+
+
+# ── POST /api/activities/<aid>/add  — Legacy add route compatibility ──
+@activities_bp.route('/activities/<int:aid>/add', methods=['POST'])
+def add_to_trip_legacy(aid):
+    """Legacy route to add activity to trip."""
+    d       = request.get_json() or {}
+    trip_id = d.get('trip_id', 1)
+    day_num = d.get('day_number', 1)
+    stop_id = d.get('stop_id')
+    notes   = d.get('notes', '')
+
+    db = get_db()
     activity = db.execute('SELECT * FROM activities WHERE id=?', (aid,)).fetchone()
     if not activity:
         db.close()
         return jsonify({'success': False, 'message': 'Activity not found'}), 404
 
     db.execute(
-        'INSERT INTO trip_activities (trip_id, activity_id, day_number) VALUES (?,?,?)',
-        (trip_id, aid, day_num)
+        'INSERT INTO trip_activities (trip_id, activity_id, stop_id, day_number, notes) VALUES (?,?,?,?,?)',
+        (trip_id, aid, stop_id, day_num, notes)
     )
     db.commit()
     db.close()
     return jsonify({'success': True, 'message': f'"{activity["name"]}" added to your trip!'})
+
+
+# ── DELETE /api/trips/<trip_id>/activities/<activity_id> ──
+@activities_bp.route('/trips/<int:trip_id>/activities/<int:activity_id>', methods=['DELETE'])
+def remove_activity_from_trip(trip_id, activity_id):
+    """Remove an activity association from a trip."""
+    db = get_db()
+    db.execute(
+        'DELETE FROM trip_activities WHERE trip_id = ? AND activity_id = ?',
+        (trip_id, activity_id)
+    )
+    db.commit()
+    db.close()
+    return jsonify({'success': True, 'message': 'Activity removed from trip.'})
+
+
+# ── DELETE /api/trip-activities/<int:link_id> ──
+@activities_bp.route('/trip-activities/<int:link_id>', methods=['DELETE'])
+def delete_trip_activity_by_id(link_id):
+    """Remove a specific trip_activities link by ID."""
+    db = get_db()
+    db.execute('DELETE FROM trip_activities WHERE id = ?', (link_id,))
+    db.commit()
+    db.close()
+    return jsonify({'success': True, 'message': 'Trip activity removed.'})
