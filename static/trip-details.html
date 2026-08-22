@@ -236,9 +236,10 @@
     <div class="top-nav">
       <a href="/static/dashboard.html" class="back-link">← Back to Dashboard</a>
       <div style="display:flex;gap:10px">
+        <button class="btn btn-primary btn-sm" onclick="shareCurrentTrip()">🔗 Share Trip</button>
         <a id="viewBudgetBtn" href="/static/budget.html" class="btn btn-outline btn-sm">💰 Budget Breakdown</a>
-        <a id="viewItineraryBtn" href="/static/itinerary.html" class="btn btn-primary btn-sm">📅 View Day-Wise Itinerary</a>
-        <button class="btn btn-outline btn-sm" onclick="deleteCurrentTrip()">🗑️ Delete Trip</button>
+        <a id="viewItineraryBtn" href="/static/itinerary.html" class="btn btn-outline btn-sm">📅 View Itinerary</a>
+        <button class="btn btn-outline btn-sm" onclick="deleteCurrentTrip()">🗑️ Delete</button>
       </div>
     </div>
 
@@ -783,6 +784,29 @@
   function badgeClass(cat) {
     const map = { Sightseeing: 'badge-Sightseeing', Culture: 'badge-Culture', Nature: 'badge-Nature', Adventure: 'badge-Adventure', Experience: 'badge-Experience' };
     return map[cat] || 'badge-Sightseeing';
+  }
+
+  async function shareCurrentTrip() {
+    if (!currentTripId) return;
+
+    try {
+      const res = await fetch(`/api/trips/${currentTripId}/share`, { method: 'POST' });
+      const json = await res.json();
+
+      if (json.success) {
+        const fullUrl = window.location.origin + json.data.public_url;
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(fullUrl);
+          showToast('🔗 Public itinerary link copied to clipboard!', 'green');
+        } else {
+          showToast(`Public Link: ${fullUrl}`, 'green');
+        }
+      } else {
+        showToast('❌ ' + json.message, 'red');
+      }
+    } catch(e) {
+      showToast('❌ Error sharing trip.', 'red');
+    }
   }
 
   async function deleteCurrentTrip() {

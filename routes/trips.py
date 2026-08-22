@@ -213,6 +213,85 @@ def delete_trip(trip_id):
     return jsonify({'success': True, 'message': 'Trip deleted successfully!'})
 
 
+# ── PUBLIC SHARING ENDPOINTS (M4 Turn 5) ──────────────────────────────────
+
+@trips_bp.route('/trips/<int:trip_id>/share', methods=['POST'])
+def share_trip(trip_id):
+    """Toggle a trip to public status and generate shareable public link."""
+    db = get_db()
+    trip = db.execute('SELECT * FROM trips WHERE id = ?', (trip_id,)).fetchone()
+    if not trip:
+        db.close()
+        return jsonify({'success': False, 'message': 'Trip not found'}), 404
+
+    db.execute('UPDATE trips SET is_public = 1 WHERE id = ?', (trip_id,))
+    db.commit()
+    db.close()
+
+    public_url = f'/static/public-trip.html?id={trip_id}'
+    return jsonify({
+        'success': True,
+        'message': 'Trip is now public and shareable!',
+        'data': {
+            'trip_id': trip_id,
+            'is_public': 1,
+            'public_url': public_url
+        }
+    })
+
+
+@trips_bp.route('/trips/public/<int:trip_id>', methods=['GET'])
+def get_public_trip(trip_id):
+    """Fetch complete public read-only trip payload including stops, activities, itinerary, and budget."""
+    db = get_db()
+    trip = db.execute(
+        '''SELECT t.*, u.name as owner_name 
+           FROM trips t 
+           LEFT JOIN users u ON t.user_id = u.id 
+           WHERE t.id = ?''',
+        (trip_id,)
+    ).fetchone()
+
+    if not trip:
+        db.close()
+        return jsonify({'success': False, 'message': 'Public trip not found'}), 404
+
+    trip_dict = dict(trip)
+
+    # Fetch stops and assigned activities
+    stops = db.execute(
+        'SELECT * FROM trip_stops WHERE trip_id = ? ORDER BY stop_order ASC',
+        (trip_id,)
+    ).fetchall()
+    stops_list = [dict(s) for s in stops]
+
+    for s in stops_list:
+        acts = db.execute(
+            '''SELECT a.*, ta.id as trip_activity_id, ta.activity_date, ta.activity_time, ta.notes
+               FROM trip_activities ta
+               JOIN activities a ON ta.activity_id = a.id
+               WHERE ta.stop_id = ? OR (ta.trip_id = ? AND LOWER(a.city) = LOWER(?))''',
+            (s['id'], trip_id, s['city'])
+        ).fetchall()
+        s['activities'] = [dict(a) for a in acts]
+
+    trip_dict['stops'] = stops_list
+
+    # Calculate budget summary for public view
+    from routes.budget import calculate_trip_budget
+    budget_data = calculate_trip_budget(db, trip_id)
+
+    db.close()
+
+    return jsonify({
+        'success': True,
+        'data': {
+            'trip': trip_dict,
+            'budget': budget_data
+        }
+    })
+
+
 # ── TRIP STOPS ENDPOINTS (Multi-City & Activity Association) ─────────────────────
 
 # GET /api/trips/<trip_id>/stops

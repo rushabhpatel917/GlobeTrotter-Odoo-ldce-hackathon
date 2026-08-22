@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="GlobeTrotter Public Read-Only Trip — View shared travel itinerary and budget summary."/>
+  <title>Public Travel Itinerary — GlobeTrotter</title>
+  <link rel="stylesheet" href="/static/style.css"/>
+  <style>
+    .public-wrapper {
+      max-width: 980px;
+      margin: 36px auto 80px;
+      padding: 0 20px;
+    }
+
+    .public-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 24px; flex-wrap: wrap; gap: 12px;
+    }
+
+    /* Executive Hero Banner */
+    .hero-banner {
+      background: linear-gradient(135deg, #090d16 0%, #1e293b 70%, #0f172a 100%);
+      border: 1px solid rgba(56,189,248,.35);
+      border-radius: 24px;
+      padding: 36px 40px;
+      margin-bottom: 32px;
+      box-shadow: 0 20px 50px rgba(0,0,0,.6);
+      position: relative; overflow: hidden;
+    }
+    .hero-banner::after {
+      content: '🌐';
+      position: absolute; right: 24px; bottom: 8px;
+      font-size: 7.5rem; opacity: 0.08; pointer-events: none;
+    }
+
+    .hero-badge-row {
+      display: flex; gap: 10px; align-items: center; margin-bottom: 12px; flex-wrap: wrap;
+    }
+    .hero-title { font-size: 2.3rem; font-weight: 800; color: #ffffff; margin-bottom: 12px; }
+
+    /* Summary Grid */
+    .sum-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px; margin-top: 24px;
+    }
+    .sum-card {
+      background: rgba(15,23,42,.65); border: 1px solid var(--border);
+      padding: 14px 18px; border-radius: 16px;
+    }
+    .sum-lbl { font-size: 0.75rem; text-transform: uppercase; color: var(--muted); font-weight: 700; letter-spacing: 0.6px; margin-bottom: 4px; }
+    .sum-val { font-size: 1.25rem; font-weight: 800; color: #f8fafc; }
+    .sum-val.green { color: var(--success); }
+    .sum-val.cyan  { color: var(--primary); }
+
+    /* Journey Flow Box */
+    .journey-box {
+      background: var(--surface); border: 1px solid var(--border);
+      padding: 20px 24px; border-radius: 18px; margin-bottom: 36px;
+    }
+    .journey-title { font-size: 0.95rem; font-weight: 700; color: var(--muted); margin-bottom: 12px; }
+    .journey-pills { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .journey-pill  {
+      background: var(--bg); border: 1px solid rgba(56,189,248,.3);
+      padding: 6px 14px; border-radius: 999px; font-weight: 700; font-size: 0.88rem; color: #ffffff;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+    .journey-arrow { color: var(--primary); font-weight: 800; }
+
+    /* Day Container */
+    .day-container { margin-bottom: 40px; }
+    .day-header {
+      background: linear-gradient(90deg, #1e293b 0%, var(--surface) 100%);
+      border: 1px solid var(--border); border-left: 5px solid var(--primary);
+      border-radius: 16px; padding: 16px 22px; margin-bottom: 20px;
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
+    }
+    .day-tag {
+      background: var(--primary); color: #0f172a; font-weight: 800; font-size: 0.82rem;
+      padding: 4px 10px; border-radius: 999px; text-transform: uppercase;
+    }
+    .day-city-title { font-size: 1.25rem; font-weight: 800; color: #ffffff; }
+
+    /* Timeline Structure */
+    .timeline { position: relative; padding-left: 36px; }
+    .timeline::before {
+      content: ''; position: absolute; left: 15px; top: 10px; bottom: 10px;
+      width: 3px; background: linear-gradient(180deg, var(--primary) 0%, var(--success) 100%);
+      border-radius: 999px; opacity: 0.5;
+    }
+    .timeline-item { position: relative; margin-bottom: 20px; }
+    .timeline-item:last-child { margin-bottom: 0; }
+    .node-icon {
+      position: absolute; left: -36px; top: 14px; width: 26px; height: 26px; border-radius: 50%;
+      background: var(--bg); border: 2px solid var(--primary); display: flex; align-items: center; justify-content: center;
+      font-size: 0.8rem; z-index: 2;
+    }
+
+    .act-card {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+      padding: 18px 22px; display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;
+    }
+    .time-chip {
+      background: rgba(56,189,248,.12); color: var(--primary); border: 1px solid rgba(56,189,248,.3);
+      font-size: 0.85rem; font-weight: 800; padding: 6px 12px; border-radius: 10px; white-space: nowrap;
+    }
+
+    .cost-badge { font-size: 1.1rem; font-weight: 800; color: var(--success); }
+    .cost-badge.paid { color: var(--warning); }
+
+    /* Read only Notice */
+    .readonly-banner {
+      background: rgba(56,189,248,.08); border: 1px solid rgba(56,189,248,.25);
+      border-radius: 14px; padding: 14px 20px; color: var(--accent); font-size: 0.88rem;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 28px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a href="/" class="logo">🌍 GlobeTrotter</a>
+    <nav>
+      <a href="/static/dashboard.html">Explore GlobeTrotter</a>
+    </nav>
+  </nav>
+
+  <div class="public-wrapper">
+
+    <div class="public-header">
+      <a href="/static/dashboard.html" style="color:var(--muted);text-decoration:none;font-size:0.9rem">← GlobeTrotter Home</a>
+      <button class="btn btn-primary btn-sm" onclick="copyPublicLink()">📋 Copy Share Link</button>
+    </div>
+
+    <div class="readonly-banner">
+      <span>🔒 <strong>Public Read-Only Mode:</strong> Viewing shared travel itinerary. Modifying details requires trip owner access.</span>
+      <button class="btn btn-outline btn-sm" onclick="copyPublicLink()">📋 Copy Link</button>
+    </div>
+
+    <!-- Hero Banner -->
+    <div class="hero-banner" id="heroBanner">
+      <div class="skeleton" style="height:36px;width:60%;margin-bottom:12px"></div>
+      <div class="skeleton" style="height:20px;width:40%"></div>
+    </div>
+
+    <!-- Destination Journey Flow -->
+    <div class="journey-box" id="journeyBox">
+      <div class="journey-title">🗺️ Destination Journey Flow</div>
+      <div class="journey-pills" id="journeyPills">
+        <div class="skeleton" style="height:30px;width:120px"></div>
+      </div>
+    </div>
+
+    <!-- Day-Wise Itinerary Timeline -->
+    <div style="margin-bottom:20px">
+      <h2 style="font-size:1.4rem;font-weight:800;color:#ffffff;margin-bottom:18px">📅 Chronological Day-Wise Itinerary</h2>
+      <div id="publicTimelineContainer">
+        <div class="empty-state">
+          <div class="icon">⏳</div>
+          <p>Loading public itinerary timeline...</p>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /public-wrapper -->
+
+  <div id="toast"></div>
+
+<script>
+  let publicTripId = 1;
+
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.has('id') || urlParams.has('trip_id')) {
+    publicTripId = parseInt(urlParams.get('id') || urlParams.get('trip_id'), 10) || 1;
+  }
+
+  async function loadPublicTrip() {
+    try {
+      const [pubRes, itinRes] = await Promise.all([
+        fetch(`/api/trips/public/${publicTripId}`),
+        fetch(`/api/trips/${publicTripId}/itinerary`)
+      ]);
+
+      const pubJson  = await pubRes.json();
+      const itinJson = await itinRes.json();
+
+      if (!pubJson.success || !pubJson.data) {
+        document.getElementById('publicTimelineContainer').innerHTML = `
+          <div class="empty-state">
+            <div class="icon">⚠️</div>
+            <h3>Public trip not found</h3>
+            <a href="/static/dashboard.html" class="btn btn-primary" style="margin-top:14px">Go to Dashboard</a>
+          </div>`;
+        return;
+      }
+
+      renderHeroBanner(pubJson.data.trip, pubJson.data.budget);
+      renderJourneyBox(pubJson.data.trip.stops || []);
+      renderTimeline(itinJson.data || {});
+
+    } catch(e) {
+      showToast('❌ Error loading public itinerary.', 'red');
+    }
+  }
+
+  function renderHeroBanner(trip, budget) {
+    const totalCost = budget ? budget.total_cost : 0;
+    const avgDaily  = budget ? budget.avg_cost_per_day : 0;
+    const stops     = trip.stops || [];
+
+    let durationText = 'Flexible Duration';
+    if (trip.start_date && trip.end_date) {
+      const start = new Date(trip.start_date);
+      const end   = new Date(trip.end_date);
+      const diffDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+      if (diffDays > 0) durationText = `${diffDays} Days`;
+    }
+
+    document.getElementById('heroBanner').innerHTML = `
+      <div class="hero-badge-row">
+        <span class="badge badge-Sightseeing">🌐 Shared Itinerary</span>
+        <span class="badge badge-Culture">👤 Created by ${escHtml(trip.owner_name || 'Traveler')}</span>
+      </div>
+
+      <h1 class="hero-title">${escHtml(trip.title)}</h1>
+      ${trip.description ? `<p style="color:var(--muted);font-size:0.95rem;line-height:1.5;max-width:700px">${escHtml(trip.description)}</p>` : ''}
+
+      <div class="sum-grid">
+        <div class="sum-card">
+          <div class="sum-lbl">Date Range</div>
+          <div class="sum-val cyan" style="font-size:1rem">${trip.start_date ? trip.start_date + (trip.end_date ? ' → ' + trip.end_date : '') : 'Flexible'}</div>
+        </div>
+
+        <div class="sum-card">
+          <div class="sum-lbl">Duration</div>
+          <div class="sum-val">${durationText}</div>
+        </div>
+
+        <div class="sum-card">
+          <div class="sum-lbl">Destinations</div>
+          <div class="sum-val">${stops.length} Stop${stops.length !== 1 ? 's' : ''}</div>
+        </div>
+
+        <div class="sum-card">
+          <div class="sum-lbl">Estimated Total Budget</div>
+          <div class="sum-val green">$${totalCost.toFixed(2)}</div>
+        </div>
+
+        <div class="sum-card">
+          <div class="sum-lbl">Average Cost / Day</div>
+          <div class="sum-val green">$${avgDaily.toFixed(2)} / day</div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderJourneyBox(stops) {
+    const box = document.getElementById('journeyPills');
+    if (!stops.length) {
+      box.innerHTML = `<span style="color:var(--muted);font-size:0.88rem">No destination stops defined.</span>`;
+      return;
+    }
+
+    box.innerHTML = stops.map((s, idx) => `
+      <div class="journey-pill">
+        📍 <span>${escHtml(s.city)}</span>${s.country ? `, ${escHtml(s.country)}` : ''}
+      </div>
+      ${idx < stops.length - 1 ? `<span class="journey-arrow">➔</span>` : ''}
+    `).join('');
+  }
+
+  function getCategoryEmoji(cat) {
+    const map = { Sightseeing: '🏛️', Culture: '🎨', Nature: '🌿', Adventure: '⚡', Experience: '✨' };
+    return map[cat] || '📍';
+  }
+
+  function renderTimeline(itinData) {
+    const container = document.getElementById('publicTimelineContainer');
+    const itinerary = itinData.itinerary || [];
+
+    if (!itinerary.length) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="icon">🧭</div>
+          <p>No scheduled activities in this public itinerary yet.</p>
+        </div>`;
+      return;
+    }
+
+    let dayNum = 1;
+    container.innerHTML = itinerary.map(dayBlock => {
+      const dateStr = dayBlock.date;
+      const cities  = dayBlock.cities || [];
+
+      return cities.map(cityBlock => {
+        const cityName = cityBlock.city;
+        const acts     = cityBlock.activities || [];
+        const currentDay = dayNum++;
+
+        return `
+          <div class="day-container">
+            <div class="day-header">
+              <div style="display:flex;align-items:center;gap:10px">
+                <span class="day-tag">DAY ${currentDay}</span>
+                <span class="day-city-title">📍 ${escHtml(cityName)}</span>
+              </div>
+              <span style="font-size:0.86rem;color:var(--accent);font-weight:700">📅 ${escHtml(dateStr)}</span>
+            </div>
+
+            <div class="timeline">
+              ${acts.map(a => `
+                <div class="timeline-item">
+                  <div class="node-icon">${getCategoryEmoji(a.category)}</div>
+
+                  <div class="act-card">
+                    <div style="display:flex;align-items:flex-start;gap:14px;flex:1">
+                      <div class="time-chip">🕒 ${escHtml(a.time || '09:00 AM')}</div>
+
+                      <div>
+                        <h4 style="font-size:1.1rem;font-weight:800;color:#ffffff;margin-bottom:4px">${escHtml(a.name)}</h4>
+                        ${a.description ? `<p style="font-size:0.86rem;color:var(--muted);margin-bottom:8px">${escHtml(a.description)}</p>` : ''}
+
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;font-size:0.78rem;color:var(--muted)">
+                          <span style="background:var(--bg);border:1px solid var(--border);padding:2px 8px;border-radius:6px">⏱ ${escHtml(a.duration)}</span>
+                          <span style="background:var(--bg);border:1px solid var(--border);padding:2px 8px;border-radius:6px">🏷️ ${escHtml(a.category)}</span>
+                          ${a.notes ? `<span style="background:var(--bg);border:1px solid var(--border);padding:2px 8px;border-radius:6px">📝 ${escHtml(a.notes)}</span>` : ''}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style="text-align:right">
+                      <div class="cost-badge ${a.cost > 0 ? 'paid' : ''}">
+                        ${a.cost > 0 ? '$' + a.cost.toFixed(2) : 'FREE'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }).join('');
+  }
+
+  function copyPublicLink() {
+    const fullUrl = window.location.origin + `/static/public-trip.html?id=${publicTripId}`;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(fullUrl);
+      showToast('📋 Public trip link copied to clipboard!', 'green');
+    } else {
+      showToast(`Link: ${fullUrl}`, 'green');
+    }
+  }
+
+  function escHtml(s) {
+    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  let toastTimer;
+  function showToast(msg, type = 'green') {
+    const t = document.getElementById('toast');
+    clearTimeout(toastTimer);
+    t.textContent = msg;
+    t.className   = `show ${type}`;
+    toastTimer = setTimeout(() => { t.className = ''; }, 3000);
+  }
+
+  loadPublicTrip();
+</script>
+
+</body>
+</html>
