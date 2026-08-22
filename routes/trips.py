@@ -100,10 +100,10 @@ def create_trip():
     return jsonify({'success': True, 'message': 'Trip created successfully!', 'data': result}), 201
 
 
-# ── GET /api/trips/<id>  —  get trip with stops and activities ─────
+# ── GET /api/trips/<id>  —  get trip with stops and assigned activities ─────
 @trips_bp.route('/trips/<int:trip_id>', methods=['GET'])
 def get_trip(trip_id):
-    """Retrieve trip details along with multi-city stops and scheduled activities."""
+    """Retrieve trip details along with multi-city stops and activities assigned to each stop."""
     db   = get_db()
     trip = db.execute(
         '''SELECT t.*, u.name as owner_name, u.email as owner_email 
@@ -118,25 +118,36 @@ def get_trip(trip_id):
         return jsonify({'success': False, 'message': 'Trip not found'}), 404
 
     # Fetch multi-city stops ordered by stop_order
-    stops = db.execute(
+    raw_stops = db.execute(
         'SELECT * FROM trip_stops WHERE trip_id = ? ORDER BY stop_order ASC',
         (trip_id,)
     ).fetchall()
+    stops = [dict(s) for s in raw_stops]
 
-    # Fetch linked activities
-    activities = db.execute(
-        '''SELECT a.*, ta.day_number, ta.notes, ta.id as trip_activity_id
-           FROM activities a
-           JOIN trip_activities ta ON a.id = ta.activity_id
+    # Fetch linked activities with stop details
+    raw_activities = db.execute(
+        '''SELECT a.*, ta.day_number, ta.notes, ta.stop_id, ta.activity_time, ta.id as trip_activity_id,
+                  s.city as stop_city, s.country as stop_country
+           FROM trip_activities ta
+           JOIN activities a ON ta.activity_id = a.id
+           LEFT JOIN trip_stops s ON ta.stop_id = s.id
            WHERE ta.trip_id = ?
-           ORDER BY ta.day_number, a.name''',
+           ORDER BY ta.stop_id, ta.day_number, a.name''',
         (trip_id,)
     ).fetchall()
+    activities = [dict(a) for a in raw_activities]
+
+    # Attach activities array to each stop (Trip -> Stop -> Activities)
+    for stop in stops:
+        stop['activities'] = [
+            a for a in activities 
+            if a.get('stop_id') == stop['id'] or (not a.get('stop_id') and a.get('city', '').lower() == stop['city'].lower())
+        ]
 
     db.close()
     result = dict(trip)
-    result['stops'] = [dict(s) for s in stops]
-    result['activities'] = [dict(a) for a in activities]
+    result['stops'] = stops
+    result['activities'] = activities
     return jsonify({'success': True, 'data': result})
 
 
@@ -202,19 +213,31 @@ def delete_trip(trip_id):
     return jsonify({'success': True, 'message': 'Trip deleted successfully!'})
 
 
-# ── TRIP STOPS ENDPOINTS (Multi-City Support) ─────────────────────
+# ── TRIP STOPS ENDPOINTS (Multi-City & Activity Association) ─────────────────────
 
 # GET /api/trips/<trip_id>/stops
 @trips_bp.route('/trips/<int:trip_id>/stops', methods=['GET'])
 def get_trip_stops(trip_id):
-    """Fetch all stops for a specific trip ordered by stop_order."""
+    """Fetch all stops for a specific trip ordered by stop_order with activities."""
     db = get_db()
-    stops = db.execute(
+    raw_stops = db.execute(
         'SELECT * FROM trip_stops WHERE trip_id = ? ORDER BY stop_order ASC',
         (trip_id,)
     ).fetchall()
+    stops = [dict(s) for s in raw_stops]
+
+    for stop in stops:
+        acts = db.execute(
+            '''SELECT a.*, ta.id as trip_activity_id, ta.day_number, ta.activity_time, ta.notes
+               FROM trip_activities ta
+               JOIN activities a ON ta.activity_id = a.id
+               WHERE ta.stop_id = ? OR (ta.trip_id = ? AND LOWER(a.city) = LOWER(?))''',
+            (stop['id'], trip_id, stop['city'])
+        ).fetchall()
+        stop['activities'] = [dict(a) for a in acts]
+
     db.close()
-    return jsonify({'success': True, 'data': [dict(s) for s in stops]})
+    return jsonify({'success': True, 'data': stops})
 
 
 # POST /api/trips/<trip_id>/stops
@@ -254,6 +277,64 @@ def add_trip_stop(trip_id):
     db.close()
 
     return jsonify({'success': True, 'message': f'Added stop: {city}', 'data': dict(new_stop)}), 201
+
+
+# POST /api/trips/stops/<stop_id>/activities  — Add activity to a specific City Stop
+@trips_bp.route('/trips/stops/<int:stop_id>/activities', methods=['POST'])
+def add_activity_to_stop(stop_id):
+    """Add an activity to a specific city stop."""
+    d           = request.get_json() or {}
+    activity_id = d.get('activity_id')
+    day_number  = d.get('day_number', 1)
+    act_time    = d.get('activity_time') or d.get('time', '')
+    notes       = d.get('notes', '')
+
+    if not activity_id:
+        return jsonify({'success': False, 'message': 'activity_id is required'}), 400
+
+    db   = get_db()
+    stop = db.execute('SELECT * FROM trip_stops WHERE id = ?', (stop_id,)).fetchone()
+    if not stop:
+        db.close()
+        return jsonify({'success': False, 'message': 'City stop not found'}), 404
+
+    activity = db.execute('SELECT * FROM activities WHERE id = ?', (activity_id,)).fetchone()
+    if not activity:
+        db.close()
+        return jsonify({'success': False, 'message': 'Activity not found'}), 404
+
+    cursor = db.execute(
+        '''INSERT INTO trip_activities (trip_id, activity_id, stop_id, day_number, activity_time, notes)
+           VALUES (?, ?, ?, ?, ?, ?)''',
+        (stop['trip_id'], activity_id, stop_id, day_number, act_time, notes)
+    )
+    link_id = cursor.lastrowid
+    db.commit()
+    db.close()
+
+    return jsonify({
+        'success': True,
+        'message': f'Added "{activity["name"]}" to {stop["city"]}',
+        'data': {
+            'id': link_id,
+            'trip_id': stop['trip_id'],
+            'stop_id': stop_id,
+            'activity_id': activity_id,
+            'name': activity['name'],
+            'city': stop['city']
+        }
+    }), 201
+
+
+# DELETE /api/trips/stops/<stop_id>/activities/<activity_id>  — Remove activity from a City Stop
+@trips_bp.route('/trips/stops/<int:stop_id>/activities/<int:activity_id>', methods=['DELETE'])
+def remove_activity_from_stop(stop_id, activity_id):
+    """Remove an activity from a specific city stop."""
+    db = get_db()
+    db.execute('DELETE FROM trip_activities WHERE stop_id = ? AND activity_id = ?', (stop_id, activity_id))
+    db.commit()
+    db.close()
+    return jsonify({'success': True, 'message': 'Activity removed from stop.'})
 
 
 # PUT /api/trips/stops/<stop_id>  — Edit Stop or Reorder
@@ -296,6 +377,7 @@ def delete_trip_stop(stop_id):
         db.close()
         return jsonify({'success': False, 'message': 'Stop not found'}), 404
 
+    db.execute('DELETE FROM trip_activities WHERE stop_id = ?', (stop_id,))
     db.execute('DELETE FROM trip_stops WHERE id = ?', (stop_id,))
     db.commit()
     db.close()

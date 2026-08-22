@@ -101,7 +101,7 @@ def create_activity():
 # ── POST /api/trips/<trip_id>/activities  — Add activity to trip/stop ──
 @activities_bp.route('/trips/<int:trip_id>/activities', methods=['POST'])
 def add_activity_to_trip(trip_id):
-    """Add an activity to a specific trip or stop."""
+    """Add an activity to a specific trip and auto-associate with matching city stop if available."""
     d           = request.get_json() or {}
     activity_id = d.get('activity_id')
     stop_id     = d.get('stop_id')
@@ -118,6 +118,15 @@ def add_activity_to_trip(trip_id):
         db.close()
         return jsonify({'success': False, 'message': 'Activity not found'}), 404
 
+    # If stop_id was not provided, check if trip has a stop for this activity's city
+    if not stop_id and activity['city']:
+        match_stop = db.execute(
+            'SELECT id FROM trip_stops WHERE trip_id = ? AND LOWER(city) = LOWER(?) ORDER BY stop_order ASC LIMIT 1',
+            (trip_id, activity['city'])
+        ).fetchone()
+        if match_stop:
+            stop_id = match_stop['id']
+
     cursor = db.execute(
         '''INSERT INTO trip_activities (trip_id, activity_id, stop_id, day_number, activity_time, notes)
            VALUES (?, ?, ?, ?, ?, ?)''',
@@ -125,11 +134,19 @@ def add_activity_to_trip(trip_id):
     )
     link_id = cursor.lastrowid
     db.commit()
+
+    # Retrieve stop city if stop_id is set
+    stop_city = activity['city']
+    if stop_id:
+        srow = db.execute('SELECT city FROM trip_stops WHERE id = ?', (stop_id,)).fetchone()
+        if srow:
+            stop_city = srow['city']
+
     db.close()
 
     return jsonify({
         'success': True,
-        'message': f'"{activity["name"]}" added to trip!',
+        'message': f'"{activity["name"]}" added to {stop_city}!',
         'data': {
             'id': link_id,
             'trip_id': trip_id,
@@ -138,7 +155,7 @@ def add_activity_to_trip(trip_id):
             'day_number': day_number,
             'activity_time': act_time,
             'name': activity['name'],
-            'city': activity['city']
+            'city': stop_city
         }
     }), 201
 
@@ -158,6 +175,14 @@ def add_to_trip_legacy(aid):
     if not activity:
         db.close()
         return jsonify({'success': False, 'message': 'Activity not found'}), 404
+
+    if not stop_id and activity['city']:
+        match_stop = db.execute(
+            'SELECT id FROM trip_stops WHERE trip_id = ? AND LOWER(city) = LOWER(?) LIMIT 1',
+            (trip_id, activity['city'])
+        ).fetchone()
+        if match_stop:
+            stop_id = match_stop['id']
 
     db.execute(
         'INSERT INTO trip_activities (trip_id, activity_id, stop_id, day_number, notes) VALUES (?,?,?,?,?)',
