@@ -5,6 +5,15 @@
 
 ---
 
+### 🌐 Live Public Demo & Evaluator Access
+
+- 🚀 **Local Web App Portal:** `http://localhost:5000` *(Start via `python app.py`)*
+- 📡 **Local Network (Wi-Fi) URL:** `http://0.0.0.0:5000` *(Accessible by any team laptop on local network)*
+- ⚡ **Instant Global Public Demo Link:** Launch via `npx localtunnel --port 5000` or `ngrok http 5000` for live remote evaluation!
+- 🔒 **Shared Public Read-Only Trip View:** `/static/public-trip.html?id=1`
+
+---
+
 ## 👥 Hackathon Engineering Team
 
 | Member | Developer Name | Primary Role | GitHub Handle |
