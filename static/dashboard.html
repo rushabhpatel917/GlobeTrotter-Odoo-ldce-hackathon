@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="GlobeTrotter Dashboard — Plan your next adventure, discover destinations and manage your trips."/>
+  <title>Dashboard — GlobeTrotter</title>
+  <link rel="stylesheet" href="/static/style.css"/>
+  <style>
+    /* ── Dashboard Layout ───────────────────────────────── */
+    .dashboard { max-width: 1140px; margin: 0 auto; padding: 0 24px 60px; }
+
+    /* ── Hero / Welcome ─────────────────────────────────── */
+    .hero {
+      background: linear-gradient(135deg, #0c1a35 0%, #1a2a4a 50%, #0f2035 100%);
+      border: 1px solid #1e3a5f;
+      border-radius: 20px;
+      padding: 48px 48px;
+      margin: 32px 0 36px;
+      position: relative; overflow: hidden;
+      display: flex; align-items: center; justify-content: space-between; gap: 32px;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 80% 50%, rgba(56,189,248,.08) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .hero-text { position: relative; z-index: 1; }
+    .hero-text .greeting {
+      font-size: 0.9rem; color: var(--primary); font-weight: 600;
+      letter-spacing: .5px; text-transform: uppercase; margin-bottom: 10px;
+    }
+    .hero-text h1 { font-size: 2.4rem; font-weight: 800; line-height: 1.2; margin-bottom: 12px; }
+    .hero-text h1 span { color: var(--primary); }
+    .hero-text p { color: var(--muted); font-size: 1rem; max-width: 440px; margin-bottom: 28px; }
+    .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+
+    .hero-globe {
+      font-size: 8rem; line-height: 1;
+      animation: float 3.5s ease-in-out infinite;
+      filter: drop-shadow(0 0 32px rgba(56,189,248,.25));
+      flex-shrink: 0;
+    }
+    @keyframes float {
+      0%,100% { transform: translateY(0);   }
+      50%      { transform: translateY(-14px); }
+    }
+
+    /* ── Stats Row ──────────────────────────────────────── */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px; margin-bottom: 40px;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 24px;
+      display: flex; align-items: center; gap: 16px;
+      transition: border-color var(--transition), transform var(--transition);
+    }
+    .stat-card:hover { border-color: var(--primary); transform: translateY(-2px); }
+    .stat-icon { font-size: 2rem; }
+    .stat-info .value { font-size: 1.8rem; font-weight: 800; color: var(--primary); line-height: 1; }
+    .stat-info .label { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
+
+    /* ── Section Headers ────────────────────────────────── */
+    .section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 20px;
+    }
+    .section-header h2 { font-size: 1.3rem; font-weight: 700; }
+    .section-header a  {
+      font-size: 0.85rem; color: var(--primary);
+      text-decoration: none; font-weight: 500;
+    }
+    .section-header a:hover { text-decoration: underline; }
+
+    /* ── My Trips ───────────────────────────────────────── */
+    .trips-section { margin-bottom: 48px; }
+    .trips-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 18px;
+    }
+    .trip-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      display: flex; flex-direction: column; gap: 10px;
+      transition: border-color var(--transition), transform var(--transition);
+      cursor: pointer;
+    }
+    .trip-card:hover { border-color: rgba(56,189,248,.4); transform: translateY(-3px); }
+    .trip-card .trip-title { font-size: 1.05rem; font-weight: 700; }
+    .trip-card .trip-dates { font-size: 0.82rem; color: var(--muted); }
+    .trip-card .trip-desc  { font-size: 0.87rem; color: var(--muted); line-height: 1.5;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .trip-card .trip-footer {
+      display: flex; justify-content: space-between; align-items: center;
+      padding-top: 10px; border-top: 1px solid var(--border); margin-top: 4px;
+    }
+    .trip-status {
+      display: inline-flex; align-items: center; gap: 5px;
+      font-size: 0.75rem; font-weight: 600; padding: 3px 10px;
+      border-radius: 999px;
+    }
+    .trip-status.upcoming { background: rgba(56,189,248,.12); color: var(--primary); }
+    .trip-status.past     { background: rgba(148,163,184,.1);  color: var(--muted); }
+
+    /* Empty trips state */
+    .trips-empty {
+      background: var(--surface); border: 1px dashed var(--border);
+      border-radius: var(--radius); padding: 48px 24px;
+      text-align: center; color: var(--muted);
+    }
+    .trips-empty .icon { font-size: 2.8rem; margin-bottom: 12px; }
+    .trips-empty p { margin-bottom: 20px; font-size: 0.95rem; }
+
+    /* ── Destination Cards ──────────────────────────────── */
+    .destinations-section { margin-bottom: 48px; }
+    .dest-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 18px;
+    }
+    .dest-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px 20px;
+      text-align: center;
+      transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition);
+      cursor: pointer;
+    }
+    .dest-card:hover {
+      border-color: rgba(129,140,248,.5);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0,0,0,.5);
+    }
+    .dest-card .flag  { font-size: 3rem; margin-bottom: 10px; display: block; }
+    .dest-card .city  { font-size: 1.1rem; font-weight: 700; margin-bottom: 4px; }
+    .dest-card .country { font-size: 0.8rem; color: var(--muted); margin-bottom: 12px; }
+    .dest-card .tags  { display: flex; flex-wrap: wrap; gap: 5px; justify-content: center; }
+    .dest-card .tag   {
+      font-size: 0.7rem; padding: 2px 8px;
+      background: rgba(255,255,255,.05); border: 1px solid var(--border);
+      border-radius: 999px; color: var(--muted);
+    }
+    .dest-card .explore-btn {
+      margin-top: 16px; width: 100%;
+      padding: 9px; border-radius: 8px; border: none;
+      background: rgba(129,140,248,.12); color: var(--accent);
+      font-size: 0.85rem; font-weight: 600; cursor: pointer;
+      transition: background var(--transition);
+    }
+    .dest-card .explore-btn:hover { background: rgba(129,140,248,.24); }
+
+    /* ── Quick Actions ──────────────────────────────────── */
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px; margin-bottom: 48px;
+    }
+    .action-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px 20px;
+      text-align: center; cursor: pointer;
+      text-decoration: none; color: inherit;
+      transition: border-color var(--transition), transform var(--transition);
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
+    }
+    .action-card:hover { border-color: var(--primary); transform: translateY(-2px); }
+    .action-card .icon { font-size: 2rem; }
+    .action-card .title { font-weight: 700; font-size: 0.95rem; }
+    .action-card .sub   { font-size: 0.8rem; color: var(--muted); }
+
+    /* ── Plan Trip Modal (minimal) ──────────────────────── */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.65); backdrop-filter: blur(4px);
+      display: none; align-items: center; justify-content: center;
+      z-index: 500;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 32px; width: 100%; max-width: 480px;
+      animation: slideUp .25s ease;
+    }
+    @keyframes slideUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+    .modal h2 { font-size: 1.3rem; font-weight: 700; margin-bottom: 20px; }
+    .modal .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .modal .form-group { margin-bottom: 16px; }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
+    .modal-close {
+      position: absolute; top: 0; right: 0; /* handled by button */
+    }
+
+    @media(max-width:640px) {
+      .hero { flex-direction: column; text-align: center; padding: 36px 24px; }
+      .hero-globe { font-size: 5rem; }
+      .hero-text h1 { font-size: 1.8rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a href="/" class="logo">🌍 GlobeTrotter</a>
+    <nav>
+      <a href="/static/dashboard.html" class="active">Dashboard</a>
+      <a href="/static/activities.html">Activities</a>
+    </nav>
+  </nav>
+
+  <div class="dashboard">
+
+    <!-- ── Hero ── -->
+    <div class="hero">
+      <div class="hero-text">
+        <div class="greeting">✈️ Welcome back, Traveler</div>
+        <h1>Where will you go<br/><span>next?</span></h1>
+        <p>Plan trips, discover activities, and build your perfect itinerary — all in one place.</p>
+        <div class="hero-actions">
+          <button class="btn btn-primary" onclick="openModal()">＋ Plan New Trip</button>
+          <a href="/static/activities.html" class="btn btn-outline">🗺️ Discover Activities</a>
+        </div>
+      </div>
+      <div class="hero-globe">🌍</div>
+    </div>
+
+    <!-- ── Stats ── -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <span class="stat-icon">🧳</span>
+        <div class="stat-info">
+          <div class="value" id="statTrips">—</div>
+          <div class="label">Trips Planned</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">🗺️</span>
+        <div class="stat-info">
+          <div class="value" id="statActivities">20</div>
+          <div class="label">Activities Available</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">🌆</span>
+        <div class="stat-info">
+          <div class="value">7</div>
+          <div class="label">Cities to Explore</div>
+        </div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">⭐</span>
+        <div class="stat-info">
+          <div class="value">FREE</div>
+          <div class="label">Always Free to Use</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── My Trips ── -->
+    <div class="trips-section">
+      <div class="section-header">
+        <h2>🧳 My Trips</h2>
+      </div>
+      <div id="tripsContainer">
+        <!-- Loaded by JS -->
+        <div class="trips-empty">
+          <div class="icon">⏳</div>
+          <p>Loading your trips...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Quick Actions ── -->
+    <div class="section-header">
+      <h2>⚡ Quick Actions</h2>
+    </div>
+    <div class="quick-actions" style="margin-top:0">
+      <div class="action-card" onclick="openModal()">
+        <span class="icon">✈️</span>
+        <span class="title">Plan a Trip</span>
+        <span class="sub">Create your next adventure</span>
+      </div>
+      <a href="/static/activities.html" class="action-card">
+        <span class="icon">🔍</span>
+        <span class="title">Find Activities</span>
+        <span class="sub">Browse 20+ experiences</span>
+      </a>
+      <a href="/static/activities.html?city=Paris" class="action-card">
+        <span class="icon">🇫🇷</span>
+        <span class="title">Explore Paris</span>
+        <span class="sub">Top activities in Paris</span>
+      </a>
+      <a href="/static/activities.html?city=Tokyo" class="action-card">
+        <span class="icon">🇯🇵</span>
+        <span class="title">Explore Tokyo</span>
+        <span class="sub">Top activities in Tokyo</span>
+      </a>
+    </div>
+
+    <!-- ── Destination Recommendations ── -->
+    <div class="destinations-section" style="margin-top:40px">
+      <div class="section-header">
+        <h2>🌟 Recommended Destinations</h2>
+        <a href="/static/activities.html">Browse all →</a>
+      </div>
+      <div class="dest-grid">
+
+        <div class="dest-card" onclick="exploreCity('Paris')">
+          <span class="flag">🇫🇷</span>
+          <div class="city">Paris</div>
+          <div class="country">France · Europe</div>
+          <div class="tags">
+            <span class="tag">Romance</span>
+            <span class="tag">Culture</span>
+            <span class="tag">Food</span>
+          </div>
+          <button class="explore-btn">Explore Activities →</button>
+        </div>
+
+        <div class="dest-card" onclick="exploreCity('Tokyo')">
+          <span class="flag">🇯🇵</span>
+          <div class="city">Tokyo</div>
+          <div class="country">Japan · Asia</div>
+          <div class="tags">
+            <span class="tag">Technology</span>
+            <span class="tag">Food</span>
+            <span class="tag">Temples</span>
+          </div>
+          <button class="explore-btn">Explore Activities →</button>
+        </div>
+
+        <div class="dest-card" onclick="exploreCity('Rome')">
+          <span class="flag">🇮🇹</span>
+          <div class="city">Rome</div>
+          <div class="country">Italy · Europe</div>
+          <div class="tags">
+            <span class="tag">History</span>
+            <span class="tag">Art</span>
+            <span class="tag">Cuisine</span>
+          </div>
+          <button class="explore-btn">Explore Activities →</button>
+        </div>
+
+        <div class="dest-card" onclick="exploreCity('Dubai')">
+          <span class="flag">🇦🇪</span>
+          <div class="city">Dubai</div>
+          <div class="country">UAE · Middle East</div>
+          <div class="tags">
+            <span class="tag">Luxury</span>
+            <span class="tag">Desert</span>
+            <span class="tag">Shopping</span>
+          </div>
+          <button class="explore-btn">Explore Activities →</button>
+        </div>
+
+        <div class="dest-card" onclick="exploreCity('Barcelona')">
+          <span class="flag">🇪🇸</span>
+          <div class="city">Barcelona</div>
+          <div class="country">Spain · Europe</div>
+          <div class="tags">
+            <span class="tag">Architecture</span>
+            <span class="tag">Beach</span>
+            <span class="tag">Nightlife</span>
+          </div>
+          <button class="explore-btn">Explore Activities →</button>
+        </div>
+
+        <div class="dest-card" onclick="exploreCity('London')">
+          <span class="flag">🇬🇧</span>
+          <div class="city">London</div>
+          <div class="country">UK · Europe</div>
+          <div class="tags">
+            <span class="tag">History</span>
+            <span class="tag">Museums</span>
+            <span class="tag">Theatre</span>
+          </div>
+          <button class="explore-btn">Explore Activities →</button>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /dashboard -->
+
+  <!-- ── Plan Trip Modal ── -->
+  <div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+    <div class="modal">
+      <h2>✈️ Plan a New Trip</h2>
+
+      <div class="form-group">
+        <label>Trip Name *</label>
+        <input type="text" id="tripTitle" placeholder="e.g. Paris Summer 2026"/>
+      </div>
+      <div class="form-group">
+        <label>Description</label>
+        <input type="text" id="tripDesc" placeholder="What's this trip about?"/>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Start Date</label>
+          <input type="date" id="tripStart"/>
+        </div>
+        <div class="form-group">
+          <label>End Date</label>
+          <input type="date" id="tripEnd"/>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-outline btn-sm" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-primary btn-sm" onclick="createTrip()">Create Trip →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast"></div>
+
+<script>
+  /* ── Load trips on page load ── */
+  async function loadTrips() {
+    try {
+      const res  = await fetch('/api/trips');
+      const json = await res.json();
+      const list = json.data || [];
+
+      document.getElementById('statTrips').textContent = list.length;
+
+      if (list.length === 0) {
+        document.getElementById('tripsContainer').innerHTML = `
+          <div class="trips-empty">
+            <div class="icon">🗺️</div>
+            <p>No trips yet — start planning your first adventure!</p>
+            <button class="btn btn-primary" onclick="openModal()">＋ Plan New Trip</button>
+          </div>`;
+        return;
+      }
+
+      const cards = list.map(t => {
+        const today  = new Date().toISOString().split('T')[0];
+        const status = (!t.end_date || t.end_date >= today) ? 'upcoming' : 'past';
+        const label  = status === 'upcoming' ? '🟢 Upcoming' : '⚫ Past';
+        return `
+          <div class="trip-card">
+            <div class="trip-title">${escHtml(t.title)}</div>
+            ${t.description ? `<div class="trip-desc">${escHtml(t.description)}</div>` : ''}
+            ${t.start_date ? `<div class="trip-dates">📅 ${t.start_date}${t.end_date ? ' → ' + t.end_date : ''}</div>` : ''}
+            <div class="trip-footer">
+              <span class="trip-status ${status}">${label}</span>
+              <a href="/static/activities.html" class="btn btn-outline btn-sm">Add Activities</a>
+            </div>
+          </div>`;
+      }).join('');
+
+      document.getElementById('tripsContainer').innerHTML =
+        `<div class="trips-grid">${cards}</div>`;
+
+    } catch(e) {
+      document.getElementById('tripsContainer').innerHTML = `
+        <div class="trips-empty">
+          <div class="icon">⚠️</div>
+          <p>Could not load trips. Make sure <code>python app.py</code> is running.</p>
+        </div>`;
+    }
+  }
+
+  /* ── Create trip via modal ── */
+  async function createTrip() {
+    const title = document.getElementById('tripTitle').value.trim();
+    if (!title) { showToast('❌ Trip name is required!', 'red'); return; }
+
+    try {
+      const res  = await fetch('/api/trips', {
+        method:  'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+          user_id:     1,
+          title,
+          description: document.getElementById('tripDesc').value.trim(),
+          start_date:  document.getElementById('tripStart').value,
+          end_date:    document.getElementById('tripEnd').value
+        })
+      });
+      const json = await res.json();
+      if (json.success) {
+        closeModal();
+        showToast(`✅ "${title}" created!`, 'green');
+        loadTrips();
+      } else {
+        showToast('❌ ' + json.message, 'red');
+      }
+    } catch(e) {
+      showToast('❌ Server error.', 'red');
+    }
+  }
+
+  /* ── Navigate to activities filtered by city ── */
+  function exploreCity(city) {
+    window.location.href = `/static/activities.html?city=${encodeURIComponent(city)}`;
+  }
+
+  /* ── Modal ── */
+  function openModal()  { document.getElementById('modalOverlay').classList.add('open'); }
+  function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); }
+  function closeModalOutside(e) {
+    if (e.target === document.getElementById('modalOverlay')) closeModal();
+  }
+
+  /* ── Toast ── */
+  let toastTimer;
+  function showToast(msg, type = 'green') {
+    const t = document.getElementById('toast');
+    clearTimeout(toastTimer);
+    t.textContent = msg;
+    t.className   = `show ${type}`;
+    toastTimer = setTimeout(() => { t.className = ''; }, 3000);
+  }
+
+  /* ── Escape HTML ── */
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  /* ── Init ── */
+  loadTrips();
+</script>
+
+</body>
+</html>
