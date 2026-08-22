@@ -218,12 +218,13 @@
       <!-- City Quick Filter Tabs -->
       <div class="city-tabs" id="cityTabs">
         <button class="city-tab active" data-city="">🌐 All Cities</button>
+        <button class="city-tab" data-city="Kashmir">🏔️ Kashmir</button>
         <button class="city-tab" data-city="Paris">🇫🇷 Paris</button>
         <button class="city-tab" data-city="Rome">🇮🇹 Rome</button>
-        <button class="city-tab" data-city="Barcelona">🇪🇸 Barcelona</button>
-        <button class="city-tab" data-city="London">🇬🇧 London</button>
+        <button class="city-tab" data-city="Goa">🏖️ Goa</button>
+        <button class="city-tab" data-city="Jaipur">🏰 Jaipur</button>
         <button class="city-tab" data-city="Tokyo">🇯🇵 Tokyo</button>
-        <button class="city-tab" data-city="Dubai">🇦🇪 Dubai</button>
+        <button class="city-tab" data-city="London">🇬🇧 London</button>
       </div>
     </div>
 
@@ -365,10 +366,11 @@
 
           <div class="selected-ribbon">✓ Selected</div>
 
-          <!-- Banner Header -->
-          <div class="card-banner cat-${a.category}">
-            <span class="banner-icon">${categoryIcon(a.category)}</span>
-            <span class="city-chip">📍 ${escHtml(a.city)}</span>
+          <!-- Banner Header with Destination Photo -->
+          <div class="card-banner cat-${a.category}" style="${a.image_url ? `background: url('${a.image_url}') center/cover no-repeat; height:130px; position:relative;` : ''}">
+            ${a.image_url ? `<div style="position:absolute;inset:0;background:linear-gradient(to top, rgba(9,13,22,0.92), rgba(9,13,22,0.2));"></div>` : ''}
+            <span class="banner-icon" style="position:relative;z-index:2">${categoryIcon(a.category)}</span>
+            <span class="city-chip" style="position:relative;z-index:2">📍 ${escHtml(a.city)}</span>
           </div>
 
           <div class="card-body">
