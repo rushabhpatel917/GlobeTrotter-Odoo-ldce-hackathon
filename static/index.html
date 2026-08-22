@@ -13,7 +13,7 @@
     :root {
       --bg-dark: #070a13;
       --card-bg: rgba(15, 23, 42, 0.7);
-      --border-glow: rgba(56, 189, 248, 0.25);
+      --border-glow: rgba(56, 189, 248, 0.35);
       --primary-cyan: #38bdf8;
       --primary-blue: #6366f1;
       --primary-gradient: linear-gradient(135deg, #38bdf8 0%, #6366f1 100%);
@@ -126,9 +126,9 @@
 
     /* ── Hero Main Section ──────────────────────────────────────── */
     .hero-wrapper {
-      max-width: 1050px;
+      max-width: 1140px;
       margin: 0 auto;
-      padding: 60px 24px 40px;
+      padding: 60px 24px;
       text-align: center;
       display: flex; flex-direction: column; align-items: center;
     }
@@ -218,39 +218,110 @@
       color: var(--primary-cyan);
     }
 
-    /* ── Feature Cards Grid ──────────────────────────────────────── */
+    /* ── 4 Feature Cards Grid ────────────────────────────────────── */
     .features-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
       gap: 20px;
-      width: 100%; max-width: 1100px;
-      margin-top: 10px;
+      width: 100%; max-width: 1140px;
+      margin-bottom: 70px;
     }
     .feature-card {
-      background: rgba(15, 23, 42, 0.65);
-      border: 1px solid rgba(255, 255, 255, 0.07);
-      border-radius: 20px; padding: 24px 20px;
-      text-align: left; transition: all 0.3s;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px; padding: 30px 22px;
+      text-align: center; transition: all 0.3s ease;
       backdrop-filter: blur(12px);
+      display: flex; flex-direction: column; align-items: center;
     }
     .feature-card:hover {
-      border-color: rgba(56, 189, 248, 0.35);
-      transform: translateY(-4px);
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+      border-color: rgba(56, 189, 248, 0.4);
+      transform: translateY(-6px);
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(56, 189, 248, 0.15);
     }
-    .feature-metric {
-      font-size: 1.5rem; font-weight: 800; color: #ffffff;
-      margin-bottom: 8px; display: flex; align-items: center; gap: 8px;
+    .feature-icon-box {
+      width: 52px; height: 52px; border-radius: 14px;
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.6rem; margin-bottom: 20px;
     }
-    .feature-metric span { color: var(--primary-cyan); }
+    .feature-title {
+      font-size: 1.1rem; font-weight: 800; color: #ffffff;
+      margin-bottom: 12px;
+    }
     .feature-desc {
       font-size: 0.86rem; color: var(--text-muted);
-      line-height: 1.5; font-weight: 400;
+      line-height: 1.6; font-weight: 400;
     }
+    .feature-desc strong { color: #ffffff; }
+
+    /* ── Popular Pre-Built Itineraries Section ───────────────────── */
+    .prebuilt-section {
+      width: 100%; max-width: 1140px;
+      text-align: left;
+    }
+    .prebuilt-header {
+      display: flex; justify-content: space-between; align-items: flex-end;
+      margin-bottom: 24px; flex-wrap: wrap; gap: 16px;
+    }
+    .prebuilt-title h2 {
+      font-size: 2.2rem; font-weight: 800; color: #ffffff;
+      letter-spacing: -0.5px; margin-bottom: 6px;
+    }
+    .prebuilt-title p {
+      color: var(--text-muted); font-size: 0.96rem;
+    }
+    .btn-view-all {
+      color: var(--text-muted); text-decoration: none; font-size: 0.88rem; font-weight: 600;
+      padding: 8px 16px; border-radius: 8px; background: rgba(30, 41, 59, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.08); transition: all 0.2s;
+    }
+    .btn-view-all:hover { color: var(--primary-cyan); border-color: rgba(56, 189, 248, 0.3); }
+
+    .itinerary-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    .itinerary-card {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px; overflow: hidden;
+      transition: all 0.3s ease; text-decoration: none; color: inherit;
+    }
+    .itinerary-card:hover {
+      border-color: rgba(56, 189, 248, 0.4);
+      transform: translateY(-5px);
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5);
+    }
+    .card-img-wrap {
+      height: 180px; position: relative; overflow: hidden;
+    }
+    .card-img-wrap img {
+      width: 100%; height: 100%; object-fit: cover;
+      transition: transform 0.4s ease;
+    }
+    .itinerary-card:hover .card-img-wrap img { transform: scale(1.06); }
+    .status-badge {
+      position: absolute; top: 14px; right: 14px;
+      padding: 4px 12px; border-radius: 999px;
+      font-size: 0.72rem; font-weight: 800; letter-spacing: 0.6px;
+      text-transform: uppercase;
+    }
+    .status-badge.in-progress { background: #10b981; color: #042f2e; }
+    .status-badge.planning { background: #6366f1; color: #ffffff; }
+    .status-badge.purple { background: #a855f7; color: #ffffff; }
+
+    .itinerary-card-body { padding: 20px; }
+    .itinerary-card-title { font-size: 1.15rem; font-weight: 800; color: #ffffff; margin-bottom: 6px; }
+    .itinerary-card-sub { font-size: 0.86rem; color: var(--primary-cyan); font-weight: 600; margin-bottom: 10px; }
+    .itinerary-card-desc { font-size: 0.84rem; color: var(--text-muted); line-height: 1.5; }
 
     @media (max-width: 900px) {
       .hero-main-title { font-size: 2.6rem; }
       .features-grid { grid-template-columns: repeat(2, 1fr); }
+      .itinerary-cards-grid { grid-template-columns: 1fr; }
       .nav-container { padding: 12px 18px; flex-wrap: wrap; gap: 10px; }
     }
   </style>
@@ -325,28 +396,82 @@
       </div>
     </div>
 
-    <!-- Feature Cards Grid -->
+    <!-- 4 Feature Cards Grid (Matching User Screenshot 1) -->
     <div class="features-grid">
       <div class="feature-card">
-        <div class="feature-metric"><span>100%</span> Custom</div>
-        <p class="feature-desc">Personalized itineraries tailored dynamically to your travel pace, budget, and favorite cities.</p>
+        <div class="feature-icon-box">🗺️</div>
+        <h3 class="feature-title">Multi-City Route Engine</h3>
+        <p class="feature-desc">Plot complex trips like <strong>Ahmedabad ➔ Mumbai ➔ Goa</strong> with real-time distance calculations and interactive map waypoints.</p>
       </div>
 
       <div class="feature-card">
-        <div class="feature-metric"><span>Multi-Stop</span> Routes</div>
-        <p class="feature-desc">Intelligent multi-city destination sequencing and day-wise stop management.</p>
+        <div class="feature-icon-box">✨</div>
+        <h3 class="feature-title">AI Itinerary Generator</h3>
+        <p class="feature-desc">Input days, budget, and travel vibes. The AI creates time-slotted morning, afternoon, and evening activities with accurate costs.</p>
       </div>
 
       <div class="feature-card">
-        <div class="feature-metric"><span>Real-Time</span> Budget</div>
-        <p class="feature-desc">Automatic cost aggregation across Transport, Stay, Activities, Meals, and daily averages.</p>
+        <div class="feature-icon-box">💰</div>
+        <h3 class="feature-title">Odoo-Grade Expense Tracker</h3>
+        <p class="feature-desc">Categorize expenses across Stay, Food, Transport, and Activities with automatic remaining budget gauges and payment logs.</p>
       </div>
 
       <div class="feature-card">
-        <div class="feature-metric"><span>GPS</span> Intel</div>
-        <p class="feature-desc">Curated activity catalog with timing, duration pills, and read-only public sharing.</p>
+        <div class="feature-icon-box">📱</div>
+        <h3 class="feature-title">Instant Share & Export</h3>
+        <p class="feature-desc">Generate shareable trip links, export complete structured JSON itineraries, or print formatted day-by-day guides.</p>
       </div>
     </div>
+
+    <!-- Popular Pre-Built Itineraries Section (Matching User Screenshot 1) -->
+    <section class="prebuilt-section">
+      <div class="prebuilt-header">
+        <div class="prebuilt-title">
+          <h2>Popular Pre-Built Itineraries</h2>
+          <p>Explore ready-to-use sample journeys ready for your demo presentation.</p>
+        </div>
+        <a href="/static/dashboard.html" class="btn-view-all">View All Trips ➔</a>
+      </div>
+
+      <div class="itinerary-cards-grid">
+        <a href="/static/trip-details.html?id=1" class="itinerary-card">
+          <div class="card-img-wrap">
+            <img src="/static/images/goa.jpg" alt="Goa Vacation"/>
+            <span class="status-badge in-progress">IN PROGRESS</span>
+          </div>
+          <div class="itinerary-card-body">
+            <h3 class="itinerary-card-title">Goa Sun & Coastal Escape</h3>
+            <p class="itinerary-card-sub">5 Days • ₹20,000 Budget • Beach & Water Sports</p>
+            <p class="itinerary-card-desc">Baga beach parasailing, sunset cruises, seafood shacks, and vibrant night markets.</p>
+          </div>
+        </a>
+
+        <a href="/static/trip-details.html?id=2" class="itinerary-card">
+          <div class="card-img-wrap">
+            <img src="/static/images/kashmir.jpg" alt="Kashmir Retreat"/>
+            <span class="status-badge planning">PLANNING</span>
+          </div>
+          <div class="itinerary-card-body">
+            <h3 class="itinerary-card-title">Kashmir Paradise & Valley</h3>
+            <p class="itinerary-card-sub">7 Days • ₹35,000 Budget • Alpine Mountains</p>
+            <p class="itinerary-card-desc">Dal Lake shikara houseboat stay, Gulmarg gondola peak ride, and Pahalgam pine forests.</p>
+          </div>
+        </a>
+
+        <a href="/static/trip-details.html?id=3" class="itinerary-card">
+          <div class="card-img-wrap">
+            <img src="/static/images/jaipur.jpg" alt="Jaipur Heritage"/>
+            <span class="status-badge purple">PLANNING</span>
+          </div>
+          <div class="itinerary-card-body">
+            <h3 class="itinerary-card-title">Royal Jaipur Heritage Tour</h3>
+            <p class="itinerary-card-sub">4 Days • ₹15,000 Budget • Palaces & Forts</p>
+            <p class="itinerary-card-desc">Explore Hawa Mahal pink sandstone, royal Amber Fort elephant walk, and bazaar shopping.</p>
+          </div>
+        </a>
+      </div>
+    </section>
+
   </main>
 
   <script>
