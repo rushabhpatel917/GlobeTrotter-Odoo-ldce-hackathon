@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta name="description" content="GlobeTrotter Trip Details — Overview, multi-city stops, itinerary, and activities for your travel plan."/>
-  <title>Trip Details — GlobeTrotter</title>
+  <meta name="description" content="GlobeTrotter Trip Details — Multi-city destination itinerary, dates, and activities."/>
+  <title>Trip Destinations & Details — GlobeTrotter</title>
   <link rel="stylesheet" href="/static/style.css"/>
   <style>
     .details-wrapper {
@@ -26,13 +26,14 @@
 
     /* Trip Header Banner */
     .trip-banner {
-      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
       border: 1px solid var(--border);
       border-radius: 20px;
       padding: 36px;
       position: relative;
       overflow: hidden;
       margin-bottom: 32px;
+      box-shadow: var(--shadow);
     }
     .trip-banner::after {
       content: '✈️';
@@ -63,54 +64,90 @@
     .description-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 8px; }
     .description-card p  { color: var(--muted); font-size: 0.95rem; line-height: 1.6; }
 
-    /* Multi-City Stops Timeline */
-    .stops-section { margin-bottom: 36px; }
+    /* ── Destination Section ──────────────────────────── */
+    .dest-section { margin-bottom: 40px; }
     .section-title {
-      font-size: 1.25rem; font-weight: 700; margin-bottom: 16px;
+      font-size: 1.3rem; font-weight: 700; margin-bottom: 20px;
       display: flex; justify-content: space-between; align-items: center;
     }
 
-    .stops-timeline {
-      display: flex; flex-direction: column; gap: 14px; position: relative;
+    .dest-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
     }
-    
-    .stop-card {
+
+    .dest-card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 20px 24px;
-      display: flex; align-items: center; justify-content: space-between;
-      transition: border-color var(--transition), transform var(--transition);
+      border-radius: 16px;
+      padding: 24px;
+      display: flex; flex-direction: column; justify-content: space-between;
+      transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition);
+      position: relative;
     }
-    .stop-card:hover { border-color: var(--primary); transform: translateX(4px); }
+    .dest-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-3px);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+    }
 
-    .stop-main { display: flex; align-items: center; gap: 16px; }
-    .stop-number {
-      width: 38px; height: 38px; border-radius: 50%;
+    .dest-card-header {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 12px;
+    }
+    .dest-card .city-title {
+      font-size: 1.35rem; font-weight: 800; color: #f8fafc;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .dest-card .country-subtitle {
+      font-size: 0.85rem; color: var(--muted); margin-top: 2px;
+    }
+    .stop-badge {
       background: rgba(56,189,248,.12); color: var(--primary);
-      font-weight: 800; font-size: 0.95rem;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0; border: 1px solid rgba(56,189,248,.3);
+      font-weight: 700; font-size: 0.78rem; padding: 4px 10px;
+      border-radius: 999px; border: 1px solid rgba(56,189,248,.3);
     }
-    .stop-details .city-name { font-size: 1.1rem; font-weight: 700; margin-bottom: 2px; }
-    .stop-details .stop-dates { font-size: 0.82rem; color: var(--muted); }
 
-    .stop-actions { display: flex; align-items: center; gap: 10px; }
+    .dest-dates-box {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      margin: 14px 0 18px;
+      font-weight: 600; font-size: 0.95rem; color: var(--accent);
+      display: flex; align-items: center; gap: 8px;
+    }
 
-    .empty-stops {
+    .dest-card-actions {
+      display: flex; justify-content: space-between; align-items: center;
+      padding-top: 14px; border-top: 1px solid var(--border);
+    }
+
+    .reorder-btns { display: flex; gap: 4px; }
+    .btn-icon {
+      padding: 4px 8px; font-size: 0.8rem; border-radius: 6px;
+      background: var(--bg); border: 1px solid var(--border);
+      color: var(--text); cursor: pointer; transition: background .2s;
+    }
+    .btn-icon:hover { background: var(--border); }
+
+    .action-group { display: flex; gap: 8px; }
+
+    .empty-destinations {
       background: var(--surface);
       border: 1px dashed var(--border);
       border-radius: var(--radius);
-      padding: 36px; text-align: center; color: var(--muted);
+      padding: 48px 24px; text-align: center; color: var(--muted);
+      grid-column: 1 / -1;
     }
+    .empty-destinations .icon { font-size: 3rem; margin-bottom: 12px; }
 
-    /* Activities in this trip */
+    /* Activities Section */
     .activities-section { margin-bottom: 40px; }
     .activities-list {
       display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 16px;
     }
-
     .activity-mini-card {
       background: var(--surface);
       border: 1px solid var(--border);
@@ -128,7 +165,7 @@
       padding: 36px; text-align: center; color: var(--muted);
     }
 
-    /* Modal for Add Stop */
+    /* Modal Form */
     .modal-overlay {
       position: fixed; inset: 0;
       background: rgba(0,0,0,.65); backdrop-filter: blur(4px);
@@ -142,10 +179,10 @@
       animation: slideUp .25s ease;
     }
     @keyframes slideUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
-    .modal h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 20px; }
+    .modal h3 { font-size: 1.25rem; font-weight: 700; margin-bottom: 20px; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .form-group { margin-bottom: 14px; }
-    .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
   </style>
 </head>
 <body>
@@ -168,18 +205,20 @@
     </div>
 
     <div id="tripDetailsContainer">
-      <div class="empty-stops">
+      <div class="empty-destinations">
         <div class="icon">⏳</div>
-        <p>Loading trip details...</p>
+        <p>Loading trip details & destinations...</p>
       </div>
     </div>
 
   </div>
 
-  <!-- Modal: Add Stop -->
-  <div class="modal-overlay" id="addStopModal" onclick="closeStopModalOutside(event)">
+  <!-- Modal: Add or Edit Destination Stop -->
+  <div class="modal-overlay" id="stopModal" onclick="closeStopModalOutside(event)">
     <div class="modal">
-      <h3>🏙️ Add City Stop</h3>
+      <h3 id="modalTitle">📍 Add Destination</h3>
+      <input type="hidden" id="editStopId" value=""/>
+
       <div class="form-group">
         <label>City Name *</label>
         <input type="text" id="stopCity" placeholder="e.g. Paris, Rome, Tokyo"/>
@@ -200,7 +239,7 @@
       </div>
       <div class="modal-footer">
         <button class="btn btn-outline btn-sm" onclick="closeStopModal()">Cancel</button>
-        <button class="btn btn-primary btn-sm" onclick="submitAddStop()">＋ Add Stop</button>
+        <button class="btn btn-primary btn-sm" onclick="saveStop()">Save Destination →</button>
       </div>
     </div>
   </div>
@@ -217,7 +256,7 @@
 
     if (!currentTripId) {
       document.getElementById('tripDetailsContainer').innerHTML = `
-        <div class="empty-stops">
+        <div class="empty-destinations">
           <div class="icon">⚠️</div>
           <p>No trip ID specified in URL.</p>
           <a href="/static/dashboard.html" class="btn btn-primary" style="margin-top:16px">Go to Dashboard</a>
@@ -231,7 +270,7 @@
 
       if (!json.success || !json.data) {
         document.getElementById('tripDetailsContainer').innerHTML = `
-          <div class="empty-stops">
+          <div class="empty-destinations">
             <div class="icon">❌</div>
             <p>Trip not found.</p>
             <a href="/static/dashboard.html" class="btn btn-primary" style="margin-top:16px">Go to Dashboard</a>
@@ -244,11 +283,31 @@
 
     } catch(err) {
       document.getElementById('tripDetailsContainer').innerHTML = `
-        <div class="empty-stops">
+        <div class="empty-destinations">
           <div class="icon">⚠️</div>
           <p>Error loading trip details.</p>
         </div>`;
     }
+  }
+
+  function formatDateRange(startStr, endStr) {
+    if (!startStr && !endStr) return 'Dates Flexible';
+    
+    function fmt(dStr) {
+      if (!dStr) return '';
+      const parts = dStr.split('-');
+      if (parts.length === 3) {
+        const dateObj = new Date(parts[0], parts[1]-1, parts[2]);
+        return dateObj.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+      }
+      return dStr;
+    }
+
+    const startFmt = fmt(startStr);
+    const endFmt   = fmt(endStr);
+
+    if (startFmt && endFmt) return `${startFmt} → ${endFmt}`;
+    return startFmt || endFmt;
   }
 
   function renderTripPage(trip) {
@@ -273,14 +332,14 @@
         <div class="banner-meta">
           <span class="badge badge-Sightseeing">${statusTag}</span>
           <span class="badge badge-Culture">${publicTag}</span>
-          <span class="badge badge-Nature">${stops.length} City Stop${stops.length !== 1 ? 's' : ''}</span>
+          <span class="badge badge-Nature">${stops.length} Destination${stops.length !== 1 ? 's' : ''}</span>
         </div>
 
         <h1 class="trip-title">${escHtml(trip.title)}</h1>
 
         <div class="trip-info-pills">
           <div class="info-pill">
-            📅 <span>${trip.start_date ? trip.start_date + (trip.end_date ? ' → ' + trip.end_date : '') : 'Dates not set'}</span>
+            📅 <span>${trip.start_date ? trip.start_date + (trip.end_date ? ' → ' + trip.end_date : '') : 'Dates flexible'}</span>
           </div>
           <div class="info-pill">
             ⏱ <span>${durationText}</span>
@@ -298,34 +357,46 @@
         </div>
       ` : ''}
 
-      <!-- Multi-City Stops Section -->
-      <div class="stops-section">
+      <!-- ── Multi-City Destinations Section ── -->
+      <div class="dest-section">
         <div class="section-title">
-          <span>🏙️ Multi-City Route (${stops.length} Stops)</span>
-          <button class="btn btn-primary btn-sm" onclick="openStopModal()">＋ Add City Stop</button>
+          <span>📍 Trip Destinations (${stops.length})</span>
+          <button class="btn btn-primary btn-sm" onclick="openAddStopModal()">＋ Add Destination</button>
         </div>
 
         ${stops.length === 0 ? `
-          <div class="empty-stops">
-            <div class="icon">🧭</div>
-            <p>No city stops added to this trip route yet.</p>
-            <button class="btn btn-outline" onclick="openStopModal()" style="margin-top:12px">＋ Add First Stop</button>
+          <div class="empty-destinations">
+            <div class="icon">✈️</div>
+            <p>No destinations added to this trip yet.</p>
+            <button class="btn btn-outline" onclick="openAddStopModal()" style="margin-top:12px">＋ Add First Destination</button>
           </div>
         ` : `
-          <div class="stops-timeline">
+          <div class="dest-grid">
             ${stops.map((s, idx) => `
-              <div class="stop-card">
-                <div class="stop-main">
-                  <div class="stop-number">${s.stop_order || (idx + 1)}</div>
-                  <div class="stop-details">
-                    <div class="city-name">📍 ${escHtml(s.city)}${s.country ? ', ' + escHtml(s.country) : ''}</div>
-                    <div class="stop-dates">
-                      ${s.start_date ? '📅 ' + s.start_date + (s.end_date ? ' → ' + s.end_date : '') : 'Dates flexible'}
+              <div class="dest-card">
+                <div>
+                  <div class="dest-card-header">
+                    <div>
+                      <div class="city-title">${escHtml(s.city)}</div>
+                      ${s.country ? `<div class="country-subtitle">${escHtml(s.country)}</div>` : ''}
                     </div>
+                    <span class="stop-badge">Stop ${s.stop_order || (idx + 1)}</span>
+                  </div>
+
+                  <div class="dest-dates-box">
+                    📅 <span>${formatDateRange(s.start_date, s.end_date)}</span>
                   </div>
                 </div>
-                <div class="stop-actions">
-                  <button class="btn btn-outline btn-sm" onclick="removeStop(${s.id}, '${escJs(s.city)}')">🗑️ Remove</button>
+
+                <div class="dest-card-actions">
+                  <div class="reorder-btns">
+                    <button class="btn-icon" title="Move Up" onclick="reorderStop(${s.id}, ${idx}, -1)" ${idx === 0 ? 'disabled style="opacity:0.4"' : ''}>▲</button>
+                    <button class="btn-icon" title="Move Down" onclick="reorderStop(${s.id}, ${idx}, 1)" ${idx === stops.length - 1 ? 'disabled style="opacity:0.4"' : ''}>▼</button>
+                  </div>
+                  <div class="action-group">
+                    <button class="btn btn-outline btn-sm" onclick="openEditStopModal(${s.id}, '${escJs(s.city)}', '${escJs(s.country || '')}', '${s.start_date || ''}', '${s.end_date || ''}')">✏️ Edit</button>
+                    <button class="btn btn-outline btn-sm" onclick="removeStop(${s.id}, '${escJs(s.city)}')">🗑️ Remove</button>
+                  </div>
                 </div>
               </div>
             `).join('')}
@@ -361,15 +432,37 @@
     `;
   }
 
-  /* ── Add Stop Logic ── */
-  function openStopModal() { document.getElementById('addStopModal').classList.add('open'); }
-  function closeStopModal() { document.getElementById('addStopModal').classList.remove('open'); }
-  function closeStopModalOutside(e) {
-    if (e.target === document.getElementById('addStopModal')) closeStopModal();
+  /* ── Add / Edit Stop Modal ── */
+  function openAddStopModal() {
+    document.getElementById('modalTitle').textContent = '📍 Add Destination';
+    document.getElementById('editStopId').value = '';
+    document.getElementById('stopCity').value = '';
+    document.getElementById('stopCountry').value = '';
+    document.getElementById('stopStartDate').value = '';
+    document.getElementById('stopEndDate').value = '';
+    document.getElementById('stopModal').classList.add('open');
   }
 
-  async function submitAddStop() {
-    const city = document.getElementById('stopCity').value.trim();
+  function openEditStopModal(id, city, country, startDate, endDate) {
+    document.getElementById('modalTitle').textContent = '✏️ Edit Destination';
+    document.getElementById('editStopId').value = id;
+    document.getElementById('stopCity').value = city;
+    document.getElementById('stopCountry').value = country;
+    document.getElementById('stopStartDate').value = startDate;
+    document.getElementById('stopEndDate').value = endDate;
+    document.getElementById('stopModal').classList.add('open');
+  }
+
+  function closeStopModal() {
+    document.getElementById('stopModal').classList.remove('open');
+  }
+  function closeStopModalOutside(e) {
+    if (e.target === document.getElementById('stopModal')) closeStopModal();
+  }
+
+  async function saveStop() {
+    const editId = document.getElementById('editStopId').value;
+    const city   = document.getElementById('stopCity').value.trim();
     if (!city) { showToast('❌ City name is required', 'red'); return; }
 
     const country   = document.getElementById('stopCountry').value.trim();
@@ -377,43 +470,80 @@
     const endDate   = document.getElementById('stopEndDate').value;
 
     try {
-      const res = await fetch(`/api/trips/${currentTripId}/stops`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ city, country, start_date: startDate, end_date: endDate })
-      });
-      const json = await res.json();
+      let res, json;
+      if (editId) {
+        // Edit existing stop
+        res = await fetch(`/api/trips/stops/${editId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ city, country, start_date: startDate, end_date: endDate })
+        });
+      } else {
+        // Create new stop
+        res = await fetch(`/api/trips/${currentTripId}/stops`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ city, country, start_date: startDate, end_date: endDate })
+        });
+      }
 
+      json = await res.json();
       if (json.success) {
         closeStopModal();
-        document.getElementById('stopCity').value = '';
-        document.getElementById('stopCountry').value = '';
-        document.getElementById('stopStartDate').value = '';
-        document.getElementById('stopEndDate').value = '';
-        showToast(`✅ Added stop: ${city}`, 'green');
+        showToast(editId ? `✅ Updated destination: ${city}` : `✅ Added destination: ${city}`, 'green');
         loadTripDetails();
       } else {
         showToast('❌ ' + json.message, 'red');
       }
     } catch(e) {
-      showToast('❌ Server error adding stop.', 'red');
+      showToast('❌ Server error saving destination.', 'red');
     }
   }
 
   async function removeStop(stopId, cityName) {
-    if (!confirm(`Remove ${cityName} from this trip?`)) return;
+    if (!confirm(`Remove ${cityName} from destinations?`)) return;
 
     try {
       const res = await fetch(`/api/trips/stops/${stopId}`, { method: 'DELETE' });
       const json = await res.json();
       if (json.success) {
-        showToast(`✅ Removed stop: ${cityName}`, 'green');
+        showToast(`✅ Removed destination: ${cityName}`, 'green');
         loadTripDetails();
       } else {
         showToast('❌ ' + json.message, 'red');
       }
     } catch(e) {
-      showToast('❌ Server error removing stop.', 'red');
+      showToast('❌ Server error removing destination.', 'red');
+    }
+  }
+
+  async function reorderStop(stopId, currentIndex, direction) {
+    if (!currentTripData || !currentTripData.stops) return;
+    const stops = currentTripData.stops;
+    const targetIndex = currentIndex + direction;
+    if (targetIndex < 0 || targetIndex >= stops.length) return;
+
+    const currentStop = stops[currentIndex];
+    const targetStop  = stops[targetIndex];
+
+    try {
+      // Swap stop_orders
+      await fetch(`/api/trips/stops/${currentStop.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stop_order: targetStop.stop_order || (targetIndex + 1) })
+      });
+
+      await fetch(`/api/trips/stops/${targetStop.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ stop_order: currentStop.stop_order || (currentIndex + 1) })
+      });
+
+      showToast('✅ Reordered destinations!', 'green');
+      loadTripDetails();
+    } catch(e) {
+      showToast('❌ Reordering failed.', 'red');
     }
   }
 

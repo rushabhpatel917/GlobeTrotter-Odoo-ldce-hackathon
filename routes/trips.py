@@ -232,13 +232,11 @@ def add_trip_stop(trip_id):
     end_date   = (d.get('end_date') or '').strip()
 
     db = get_db()
-    # Check if trip exists
     trip = db.execute('SELECT id FROM trips WHERE id = ?', (trip_id,)).fetchone()
     if not trip:
         db.close()
         return jsonify({'success': False, 'message': 'Trip not found'}), 404
 
-    # Calculate stop_order if not provided
     stop_order = d.get('stop_order')
     if stop_order is None:
         max_order = db.execute('SELECT MAX(stop_order) FROM trip_stops WHERE trip_id = ?', (trip_id,)).fetchone()[0]
@@ -256,6 +254,36 @@ def add_trip_stop(trip_id):
     db.close()
 
     return jsonify({'success': True, 'message': f'Added stop: {city}', 'data': dict(new_stop)}), 201
+
+
+# PUT /api/trips/stops/<stop_id>  — Edit Stop or Reorder
+@trips_bp.route('/trips/stops/<int:stop_id>', methods=['PUT'])
+def update_trip_stop(stop_id):
+    """Update stop details (city, country, start_date, end_date, stop_order)."""
+    db   = get_db()
+    stop = db.execute('SELECT * FROM trip_stops WHERE id = ?', (stop_id,)).fetchone()
+    if not stop:
+        db.close()
+        return jsonify({'success': False, 'message': 'Stop not found'}), 404
+
+    d          = request.get_json() or {}
+    city       = (d.get('city') or stop['city']).strip()
+    country    = d.get('country', stop['country'])
+    start_date = d.get('start_date', stop['start_date'])
+    end_date   = d.get('end_date', stop['end_date'])
+    stop_order = d.get('stop_order', stop['stop_order'])
+
+    db.execute(
+        '''UPDATE trip_stops
+           SET city=?, country=?, start_date=?, end_date=?, stop_order=?
+           WHERE id=?''',
+        (city, country, start_date, end_date, stop_order, stop_id)
+    )
+    db.commit()
+    updated = db.execute('SELECT * FROM trip_stops WHERE id = ?', (stop_id,)).fetchone()
+    db.close()
+
+    return jsonify({'success': True, 'message': f'Updated stop: {city}', 'data': dict(updated)})
 
 
 # DELETE /api/trips/stops/<stop_id>
