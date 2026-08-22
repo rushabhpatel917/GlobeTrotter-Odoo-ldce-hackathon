@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="Plan a new travel adventure on GlobeTrotter — set dates, trip name, and description."/>
+  <title>Plan New Trip — GlobeTrotter</title>
+  <link rel="stylesheet" href="/static/style.css"/>
+  <style>
+    .create-wrapper {
+      max-width: 680px;
+      margin: 40px auto 80px;
+      padding: 0 24px;
+    }
+
+    .back-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      color: var(--muted); text-decoration: none; font-size: 0.9rem;
+      margin-bottom: 20px; transition: color var(--transition);
+    }
+    .back-link:hover { color: var(--primary); }
+
+    .create-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 36px;
+      box-shadow: var(--shadow);
+    }
+
+    .form-header {
+      margin-bottom: 28px;
+    }
+    .form-header h1 { font-size: 1.8rem; font-weight: 800; margin-bottom: 6px; }
+    .form-header h1 span { color: var(--primary); }
+    .form-header p { color: var(--muted); font-size: 0.95rem; }
+
+    .form-section {
+      display: flex; flex-direction: column; gap: 20px;
+    }
+
+    .date-row {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    }
+
+    .error-box {
+      background: rgba(248,113,113,.12);
+      border: 1px solid var(--danger);
+      color: #f87171;
+      padding: 12px 16px; border-radius: var(--radius-sm);
+      font-size: 0.88rem; font-weight: 500;
+      display: none; margin-bottom: 16px;
+    }
+
+    .visibility-toggle {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px; background: var(--bg); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); margin-top: 4px;
+    }
+    .visibility-toggle .info { display: flex; flex-direction: column; gap: 2px; }
+    .visibility-toggle .title { font-size: 0.9rem; font-weight: 600; }
+    .visibility-toggle .sub { font-size: 0.8rem; color: var(--muted); }
+
+    .toggle-switch {
+      position: relative; width: 46px; height: 24px;
+    }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute; cursor: pointer; inset: 0;
+      background-color: var(--border); border-radius: 24px;
+      transition: .3s;
+    }
+    .slider:before {
+      position: absolute; content: ""; height: 18px; width: 18px;
+      left: 3px; bottom: 3px; background-color: white;
+      border-radius: 50%; transition: .3s;
+    }
+    input:checked + .slider { background-color: var(--primary); }
+    input:checked + .slider:before { transform: translateX(22px); }
+
+    .form-actions {
+      display: flex; justify-content: flex-end; gap: 12px;
+      margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a href="/" class="logo">🌍 GlobeTrotter</a>
+    <nav>
+      <a href="/static/dashboard.html">Dashboard</a>
+      <a href="/static/create-trip.html" class="active">Plan New Trip</a>
+      <a href="/static/activities.html">Activities</a>
+    </nav>
+  </nav>
+
+  <div class="create-wrapper">
+
+    <a href="/static/dashboard.html" class="back-link">← Back to Dashboard</a>
+
+    <div class="create-card">
+
+      <div class="form-header">
+        <h1>✈️ Plan a New <span>Trip</span></h1>
+        <p>Set up your trip details. You can add destinations and activities next!</p>
+      </div>
+
+      <div class="error-box" id="errorBox"></div>
+
+      <form id="createTripForm" onsubmit="handleTripSubmit(event)">
+
+        <div class="form-section">
+
+          <!-- Trip Name -->
+          <div class="form-group">
+            <label for="tripName">Trip Name *</label>
+            <input
+              type="text"
+              id="tripName"
+              placeholder="e.g. Summer in Paris, Tokyo Odyssey 2026"
+              required
+            />
+          </div>
+
+          <!-- Description -->
+          <div class="form-group">
+            <label for="tripDesc">Description (Optional)</label>
+            <textarea
+              id="tripDesc"
+              rows="3"
+              placeholder="What's the main vibe, goal, or notes for this trip?"
+            ></textarea>
+          </div>
+
+          <!-- Dates -->
+          <div class="date-row">
+            <div class="form-group">
+              <label for="startDate">Start Date</label>
+              <input type="date" id="startDate"/>
+            </div>
+            <div class="form-group">
+              <label for="endDate">End Date</label>
+              <input type="date" id="endDate"/>
+            </div>
+          </div>
+
+          <!-- Public Toggle -->
+          <div class="visibility-toggle">
+            <div class="info">
+              <span class="title">Public Itinerary</span>
+              <span class="sub">Allow others to view and clone this trip itinerary</span>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="isPublic"/>
+              <span class="slider"></span>
+            </label>
+          </div>
+
+        </div><!-- /form-section -->
+
+        <div class="form-actions">
+          <a href="/static/dashboard.html" class="btn btn-outline">Cancel</a>
+          <button type="submit" class="btn btn-primary" id="submitBtn">🚀 Create Trip & View Details →</button>
+        </div>
+
+      </form>
+
+    </div><!-- /create-card -->
+
+  </div>
+
+  <div id="toast"></div>
+
+<script>
+  async function handleTripSubmit(e) {
+    e.preventDefault();
+    const errorBox  = document.getElementById('errorBox');
+    const submitBtn = document.getElementById('submitBtn');
+    errorBox.style.display = 'none';
+
+    const name        = document.getElementById('tripName').value.trim();
+    const description = document.getElementById('tripDesc').value.trim();
+    const startDate   = document.getElementById('startDate').value;
+    const endDate     = document.getElementById('endDate').value;
+    const isPublic    = document.getElementById('isPublic').checked;
+
+    /* Basic Client Validation */
+    if (!name) {
+      showError('Please enter a trip name.');
+      return;
+    }
+
+    if (startDate && endDate && endDate < startDate) {
+      showError('End date cannot be earlier than the start date.');
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = '⏳ Creating Trip...';
+
+    try {
+      const res = await fetch('/api/trips', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name,
+          title: name,
+          description: description,
+          start_date: startDate,
+          end_date: endDate,
+          is_public: isPublic ? 1 : 0,
+          owner_id: 1
+        })
+      });
+
+      const json = await res.json();
+
+      if (json.success && json.data) {
+        showToast('✅ Trip created successfully! Redirecting...', 'green');
+        setTimeout(() => {
+          window.location.href = `/static/trip-details.html?id=${json.data.id}`;
+        }, 800);
+      } else {
+        showError(json.message || 'Failed to create trip.');
+        submitBtn.disabled = false;
+        submitBtn.textContent = '🚀 Create Trip & View Details →';
+      }
+
+    } catch(err) {
+      showError('Server connection error. Ensure Flask server is running.');
+      submitBtn.disabled = false;
+      submitBtn.textContent = '🚀 Create Trip & View Details →';
+    }
+  }
+
+  function showError(msg) {
+    const errorBox = document.getElementById('errorBox');
+    errorBox.textContent = '⚠️ ' + msg;
+    errorBox.style.display = 'block';
+  }
+
+  let toastTimer;
+  function showToast(msg, type = 'green') {
+    const t = document.getElementById('toast');
+    clearTimeout(toastTimer);
+    t.textContent = msg;
+    t.className   = `show ${type}`;
+    toastTimer = setTimeout(() => { t.className = ''; }, 3000);
+  }
+</script>
+
+</body>
+</html>

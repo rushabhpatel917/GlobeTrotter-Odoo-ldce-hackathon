@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="GlobeTrotter Trip Details — Overview, itinerary, and activities for your travel plan."/>
+  <title>Trip Details — GlobeTrotter</title>
+  <link rel="stylesheet" href="/static/style.css"/>
+  <style>
+    .details-wrapper {
+      max-width: 1000px;
+      margin: 36px auto 80px;
+      padding: 0 24px;
+    }
+
+    .top-nav {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 24px;
+    }
+    .back-link {
+      display: inline-flex; align-items: center; gap: 6px;
+      color: var(--muted); text-decoration: none; font-size: 0.9rem;
+      transition: color var(--transition);
+    }
+    .back-link:hover { color: var(--primary); }
+
+    /* Trip Header Banner */
+    .trip-banner {
+      background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 36px;
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 32px;
+    }
+    .trip-banner::after {
+      content: '✈️';
+      position: absolute; right: 24px; bottom: 10px;
+      font-size: 7rem; opacity: 0.12; pointer-events: none;
+    }
+
+    .banner-meta {
+      display: flex; gap: 10px; align-items: center;
+      margin-bottom: 12px; flex-wrap: wrap;
+    }
+
+    .trip-title { font-size: 2.2rem; font-weight: 800; margin-bottom: 12px; }
+
+    .trip-info-pills {
+      display: flex; gap: 20px; flex-wrap: wrap;
+      color: var(--muted); font-size: 0.9rem; margin-top: 16px;
+    }
+    .info-pill { display: flex; align-items: center; gap: 6px; }
+
+    .description-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      margin-bottom: 32px;
+    }
+    .description-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 8px; }
+    .description-card p  { color: var(--muted); font-size: 0.95rem; line-height: 1.6; }
+
+    /* Activities in this trip */
+    .activities-section h2 {
+      font-size: 1.3rem; font-weight: 700; margin-bottom: 16px;
+      display: flex; justify-content: space-between; align-items: center;
+    }
+
+    .activities-list {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 16px;
+    }
+
+    .activity-mini-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 18px;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .activity-mini-card h4 { font-size: 0.98rem; font-weight: 700; }
+    .activity-mini-card .meta { font-size: 0.8rem; color: var(--muted); }
+
+    .empty-activities {
+      background: var(--surface);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 40px; text-align: center; color: var(--muted);
+    }
+    .empty-activities .icon { font-size: 2.5rem; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a href="/" class="logo">🌍 GlobeTrotter</a>
+    <nav>
+      <a href="/static/dashboard.html">Dashboard</a>
+      <a href="/static/create-trip.html">Plan New Trip</a>
+      <a href="/static/activities.html">Activities</a>
+    </nav>
+  </nav>
+
+  <div class="details-wrapper">
+
+    <div class="top-nav">
+      <a href="/static/dashboard.html" class="back-link">← Back to Dashboard</a>
+      <button class="btn btn-outline btn-sm" onclick="deleteCurrentTrip()">🗑️ Delete Trip</button>
+    </div>
+
+    <div id="tripDetailsContainer">
+      <div class="empty-activities">
+        <div class="icon">⏳</div>
+        <p>Loading trip details...</p>
+      </div>
+    </div>
+
+  </div>
+
+  <div id="toast"></div>
+
+<script>
+  let currentTripId = null;
+
+  async function loadTripDetails() {
+    const params = new URLSearchParams(window.location.search);
+    currentTripId = params.get('id');
+
+    if (!currentTripId) {
+      document.getElementById('tripDetailsContainer').innerHTML = `
+        <div class="empty-activities">
+          <div class="icon">⚠️</div>
+          <p>No trip ID specified in URL.</p>
+          <a href="/static/dashboard.html" class="btn btn-primary" style="margin-top:16px">Go to Dashboard</a>
+        </div>`;
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/trips/${currentTripId}`);
+      const json = await res.json();
+
+      if (!json.success || !json.data) {
+        document.getElementById('tripDetailsContainer').innerHTML = `
+          <div class="empty-activities">
+            <div class="icon">❌</div>
+            <p>Trip not found.</p>
+            <a href="/static/dashboard.html" class="btn btn-primary" style="margin-top:16px">Go to Dashboard</a>
+          </div>`;
+        return;
+      }
+
+      const trip = json.data;
+      renderTripPage(trip);
+
+    } catch(err) {
+      document.getElementById('tripDetailsContainer').innerHTML = `
+        <div class="empty-activities">
+          <div class="icon">⚠️</div>
+          <p>Error loading trip details.</p>
+        </div>`;
+    }
+  }
+
+  function renderTripPage(trip) {
+    const today = new Date().toISOString().split('T')[0];
+    const isUpcoming = !trip.end_date || trip.end_date >= today;
+    const statusTag  = isUpcoming ? '🟢 Upcoming' : '⚫ Past';
+    const publicTag  = trip.is_public ? '🌐 Public' : '🔒 Private';
+
+    let durationText = 'Flexible Duration';
+    if (trip.start_date && trip.end_date) {
+      const start = new Date(trip.start_date);
+      const end   = new Date(trip.end_date);
+      const diffDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+      if (diffDays > 0) durationText = `${diffDays} Days`;
+    }
+
+    const activities = trip.activities || [];
+
+    document.getElementById('tripDetailsContainer').innerHTML = `
+      <div class="trip-banner">
+        <div class="banner-meta">
+          <span class="badge badge-Sightseeing">${statusTag}</span>
+          <span class="badge badge-Culture">${publicTag}</span>
+        </div>
+
+        <h1 class="trip-title">${escHtml(trip.title)}</h1>
+
+        <div class="trip-info-pills">
+          <div class="info-pill">
+            📅 <span>${trip.start_date ? trip.start_date + (trip.end_date ? ' → ' + trip.end_date : '') : 'Dates not set'}</span>
+          </div>
+          <div class="info-pill">
+            ⏱ <span>${durationText}</span>
+          </div>
+          <div class="info-pill">
+            👤 <span>Created by ${escHtml(trip.owner_name || 'Traveler')}</span>
+          </div>
+        </div>
+      </div>
+
+      ${trip.description ? `
+        <div class="description-card">
+          <h3>📝 Trip Description</h3>
+          <p>${escHtml(trip.description)}</p>
+        </div>
+      ` : ''}
+
+      <div class="activities-section">
+        <h2>
+          <span>📌 Saved Activities (${activities.length})</span>
+          <a href="/static/activities.html" class="btn btn-primary btn-sm">＋ Discover & Add Activities</a>
+        </h2>
+
+        ${activities.length === 0 ? `
+          <div class="empty-activities">
+            <div class="icon">🧭</div>
+            <p>No activities added to this trip yet.</p>
+            <a href="/static/activities.html" class="btn btn-outline" style="margin-top:12px">Explore Activities →</a>
+          </div>
+        ` : `
+          <div class="activities-list">
+            ${activities.map(a => `
+              <div class="activity-mini-card">
+                <h4>${escHtml(a.name)}</h4>
+                <div class="meta">📍 ${escHtml(a.city)} · ⏱ ${escHtml(a.duration)}</div>
+                <span class="badge ${badgeClass(a.category)}" style="align-self:flex-start">${a.category}</span>
+              </div>
+            `).join('')}
+          </div>
+        `}
+      </div>
+    `;
+  }
+
+  function badgeClass(cat) {
+    const map = { Sightseeing: 'badge-Sightseeing', Culture: 'badge-Culture', Nature: 'badge-Nature', Adventure: 'badge-Adventure', Experience: 'badge-Experience' };
+    return map[cat] || 'badge-Sightseeing';
+  }
+
+  async function deleteCurrentTrip() {
+    if (!currentTripId || !confirm('Are you sure you want to delete this trip?')) return;
+
+    try {
+      const res = await fetch(`/api/trips/${currentTripId}`, { method: 'DELETE' });
+      const json = await res.json();
+      if (json.success) {
+        showToast('✅ Trip deleted. Redirecting to Dashboard...', 'green');
+        setTimeout(() => window.location.href = '/static/dashboard.html', 1000);
+      } else {
+        showToast('❌ ' + json.message, 'red');
+      }
+    } catch(e) {
+      showToast('❌ Failed to delete trip.', 'red');
+    }
+  }
+
+  function escHtml(s) {
+    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  let toastTimer;
+  function showToast(msg, type = 'green') {
+    const t = document.getElementById('toast');
+    clearTimeout(toastTimer);
+    t.textContent = msg;
+    t.className   = `show ${type}`;
+    toastTimer = setTimeout(() => { t.className = ''; }, 3000);
+  }
+
+  loadTripDetails();
+</script>
+
+</body>
+</html>
