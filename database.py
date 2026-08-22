@@ -75,7 +75,7 @@ def init_db():
     try:
         c.execute('ALTER TABLE activities ADD COLUMN preferred_time TEXT')
     except sqlite3.OperationalError:
-        pass  # Column already exists
+        pass
 
     # Trip-Activities join table — M1/M2/M3
     c.execute('''
@@ -108,6 +108,20 @@ def init_db():
     except sqlite3.OperationalError:
         pass
 
+    # Trip Expenses Table — M1 Turn 5 Budget Engine
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS trip_expenses (
+            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+            trip_id     INTEGER NOT NULL,
+            category    TEXT    NOT NULL,  -- Transport, Stay, Meals, Other
+            title       TEXT    NOT NULL,
+            cost        REAL    NOT NULL DEFAULT 0,
+            notes       TEXT,
+            created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (trip_id) REFERENCES trips(id)
+        )
+    ''')
+
     conn.commit()
 
     # Seed initial high-quality demo dataset if empty
@@ -132,7 +146,7 @@ def init_db():
         conn.commit()
 
     conn.close()
-    print('[OK] Database initialized with activity_date migration.')
+    print('[OK] Database initialized with trip_expenses table.')
 
 
 if __name__ == '__main__':

@@ -16,15 +16,14 @@ def health():
 def index():
     return app.send_static_file('index.html')
 
-# ── Register blueprints here as features are added ────────────
+# ── Register blueprints ───────────────────────────────────────
 from routes.activities import activities_bp
 from routes.trips import trips_bp
+from routes.budget import budget_bp
 
 app.register_blueprint(activities_bp, url_prefix='/api')
 app.register_blueprint(trips_bp,      url_prefix='/api')
-
-# from routes.auth import auth_bp
-# app.register_blueprint(auth_bp, url_prefix='/api/auth')
+app.register_blueprint(budget_bp,     url_prefix='/api')
 
 if __name__ == '__main__':
     init_db()
