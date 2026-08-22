@@ -1,57 +1,126 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GlobeTrotter — Smart Travel Planner</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="GlobeTrotter — Smart Multi-City Travel Planning & Itinerary Budget Engine."/>
+  <title>GlobeTrotter — Smart Travel Itinerary & Budget Engine</title>
+  <link rel="stylesheet" href="/static/style.css"/>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #0f172a;
-      color: #f1f5f9;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
+      display: flex; flex-direction: column; min-height: 100vh;
+    }
+    .landing-wrapper {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      padding: 40px 24px;
+    }
+    .landing-card {
+      background: linear-gradient(135deg, #090d16 0%, #1e293b 80%);
+      border: 1px solid rgba(56,189,248,.3);
+      border-radius: 28px;
+      padding: 56px 48px;
+      max-width: 680px; width: 100%;
       text-align: center;
+      box-shadow: 0 24px 64px rgba(0,0,0,.6);
+      position: relative; overflow: hidden;
     }
-    .card {
-      background: #1e293b;
-      border: 1px solid #334155;
-      border-radius: 16px;
-      padding: 48px 56px;
-      max-width: 480px;
+    .landing-card::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(circle at 50% 20%, rgba(56,189,248,.12) 0%, transparent 60%);
+      pointer-events: none;
     }
-    .globe { font-size: 64px; margin-bottom: 16px; }
-    h1 { font-size: 2rem; font-weight: 700; color: #38bdf8; margin-bottom: 8px; }
-    p  { color: #94a3b8; margin-bottom: 24px; line-height: 1.6; }
-    .badge {
-      display: inline-block;
-      background: #064e3b;
-      color: #34d399;
-      border-radius: 999px;
-      padding: 6px 16px;
-      font-size: 0.85rem;
-      font-weight: 600;
+
+    .hero-icon { font-size: 5.5rem; margin-bottom: 16px; animation: float 3s ease-in-out infinite; }
+    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+
+    .hero-heading {
+      font-size: 2.6rem; font-weight: 800; color: #ffffff; margin-bottom: 12px;
+      letter-spacing: -0.5px;
     }
-    .api-hint {
-      margin-top: 28px;
-      font-size: 0.8rem;
-      color: #475569;
+    .hero-sub {
+      color: var(--muted); font-size: 1.05rem; line-height: 1.6; max-width: 520px;
+      margin: 0 auto 32px;
     }
-    .api-hint a { color: #38bdf8; text-decoration: none; }
+
+    .cta-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px; margin-bottom: 32px;
+    }
+    .cta-box {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 18px 20px; text-decoration: none;
+      color: var(--text); font-weight: 700; transition: all var(--transition);
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+    }
+    .cta-box:hover {
+      border-color: var(--primary); transform: translateY(-3px);
+      box-shadow: 0 8px 24px rgba(56,189,248,.15);
+    }
+    .cta-icon { font-size: 1.6rem; }
+    .cta-title { color: #ffffff; font-size: 0.98rem; }
+    .cta-desc { font-size: 0.78rem; color: var(--muted); font-weight: 500; }
+
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(52,211,153,.12); color: var(--success);
+      border: 1px solid rgba(52,211,153,.3); border-radius: 999px;
+      padding: 6px 18px; font-size: 0.85rem; font-weight: 700;
+    }
   </style>
 </head>
 <body>
-  <div class="card">
-    <div class="globe">🌍</div>
-    <h1>GlobeTrotter</h1>
-    <p>Smart Travel Planning — Odoo x LDCE Hackathon 2026</p>
-    <span class="badge">✅ Server is running</span>
-    <div class="api-hint">
-      API health: <a href="/api/health" target="_blank">/api/health</a>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a href="/" class="logo">🌍 GlobeTrotter</a>
+    <nav>
+      <a href="/static/dashboard.html">Dashboard</a>
+      <a href="/static/create-trip.html">Plan New Trip</a>
+      <a href="/static/activities.html">Activities</a>
+      <a href="/static/itinerary.html">Itinerary</a>
+      <a href="/static/budget.html">Budget</a>
+    </nav>
+  </nav>
+
+  <div class="landing-wrapper">
+    <div class="landing-card">
+      <div class="hero-icon">🌍</div>
+      <h1 class="hero-heading">GlobeTrotter</h1>
+      <p class="hero-sub">
+        Smart Multi-City Travel Planner with Day-Wise Itinerary Scheduling & Automated Budget Calculation Engine.
+      </p>
+
+      <div class="cta-grid">
+        <a href="/static/dashboard.html" class="cta-box">
+          <span class="cta-icon">📊</span>
+          <span class="cta-title">Trip Dashboard</span>
+          <span class="cta-desc">Overview & My Trips</span>
+        </a>
+
+        <a href="/static/create-trip.html" class="cta-box">
+          <span class="cta-icon">🗺️</span>
+          <span class="cta-title">Plan New Trip</span>
+          <span class="cta-desc">Multi-City Creator</span>
+        </a>
+
+        <a href="/static/itinerary.html" class="cta-box">
+          <span class="cta-icon">📅</span>
+          <span class="cta-title">Day-Wise Itinerary</span>
+          <span class="cta-desc">Timeline View</span>
+        </a>
+
+        <a href="/static/budget.html" class="cta-box">
+          <span class="cta-icon">💰</span>
+          <span class="cta-title">Budget Engine</span>
+          <span class="cta-desc">Cost Category Totals</span>
+        </a>
+      </div>
+
+      <div>
+        <span class="status-badge">🟢 API Engine Active & Ready</span>
+      </div>
     </div>
   </div>
+
 </body>
 </html>
