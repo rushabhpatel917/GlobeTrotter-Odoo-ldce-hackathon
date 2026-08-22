@@ -17,6 +17,9 @@ def index():
     return app.send_static_file('index.html')
 
 # ── Register blueprints here as features are added ────────────
+from routes.activities import activities_bp
+app.register_blueprint(activities_bp, url_prefix='/api')
+
 # from routes.auth import auth_bp
 # app.register_blueprint(auth_bp, url_prefix='/api/auth')
 

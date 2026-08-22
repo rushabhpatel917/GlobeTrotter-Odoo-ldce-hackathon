@@ -26,7 +26,7 @@ def init_db():
         )
     ''')
 
-    # Trips table (placeholder — M1 will expand in later turns)
+    # Trips table
     c.execute('''
         CREATE TABLE IF NOT EXISTS trips (
             id          INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -38,6 +38,33 @@ def init_db():
             is_public   INTEGER DEFAULT 0,
             created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (user_id) REFERENCES users(id)
+        )
+    ''')
+
+    # Activities table — M2
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS activities (
+            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+            name        TEXT    NOT NULL,
+            category    TEXT    NOT NULL,
+            description TEXT,
+            duration    TEXT,
+            cost        REAL    DEFAULT 0,
+            city        TEXT,
+            created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+
+    # Trip-Activities join table — M2
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS trip_activities (
+            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+            trip_id     INTEGER NOT NULL,
+            activity_id INTEGER NOT NULL,
+            day_number  INTEGER DEFAULT 1,
+            notes       TEXT,
+            FOREIGN KEY (trip_id)     REFERENCES trips(id),
+            FOREIGN KEY (activity_id) REFERENCES activities(id)
         )
     ''')
 

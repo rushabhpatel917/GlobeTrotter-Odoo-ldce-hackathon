@@ -1,0 +1,170 @@
+/* ══════════════════════════════════════════════════════
+   GlobeTrotter — Master Stylesheet
+   M2: pushkar1001
+   ══════════════════════════════════════════════════════ */
+
+/* ── Reset & CSS Variables ───────────────────────────── */
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg:        #0f172a;
+  --surface:   #1e293b;
+  --surface2:  #263347;
+  --border:    #334155;
+  --primary:   #38bdf8;
+  --accent:    #818cf8;
+  --success:   #34d399;
+  --warning:   #fbbf24;
+  --danger:    #f87171;
+  --text:      #f1f5f9;
+  --muted:     #94a3b8;
+  --radius:    12px;
+  --radius-sm: 8px;
+  --shadow:    0 4px 24px rgba(0,0,0,0.4);
+  --transition: .2s ease;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  line-height: 1.5;
+}
+
+/* ── Scrollbar ───────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ── Navbar ──────────────────────────────────────────── */
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 32px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 200;
+  backdrop-filter: blur(10px);
+}
+.navbar .logo {
+  font-size: 1.35rem; font-weight: 800;
+  color: var(--primary); text-decoration: none;
+  display: flex; align-items: center; gap: 8px;
+}
+.navbar nav { display: flex; align-items: center; gap: 4px; }
+.navbar nav a {
+  color: var(--muted); text-decoration: none;
+  padding: 7px 14px; border-radius: var(--radius-sm);
+  font-size: 0.9rem; font-weight: 500;
+  transition: background var(--transition), color var(--transition);
+}
+.navbar nav a:hover { background: var(--surface2); color: var(--text); }
+.navbar nav a.active { background: rgba(56,189,248,.12); color: var(--primary); }
+
+/* ── Page Wrapper ────────────────────────────────────── */
+.page { max-width: 1140px; margin: 0 auto; padding: 0 24px; }
+
+/* ── Page Header ─────────────────────────────────────── */
+.page-header { padding: 40px 0 24px; }
+.page-header h1 { font-size: 2rem; font-weight: 800; margin-bottom: 6px; }
+.page-header h1 span { color: var(--primary); }
+.page-header p { color: var(--muted); font-size: 1rem; }
+
+/* ── Buttons ─────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 10px 20px; border-radius: var(--radius-sm); border: none;
+  font-size: 0.9rem; font-weight: 600; cursor: pointer;
+  transition: opacity var(--transition), transform var(--transition);
+  text-decoration: none;
+}
+.btn:hover { opacity: .85; transform: translateY(-1px); }
+.btn:active { transform: translateY(0); }
+.btn-primary { background: var(--primary);  color: #0f172a; }
+.btn-accent  { background: var(--accent);   color: #fff; }
+.btn-success { background: var(--success);  color: #0f172a; }
+.btn-outline {
+  background: transparent; color: var(--primary);
+  border: 1.5px solid var(--primary);
+}
+.btn-sm { padding: 7px 14px; font-size: 0.82rem; }
+.btn-full { width: 100%; }
+
+/* ── Cards ───────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  transition: border-color var(--transition), box-shadow var(--transition), transform var(--transition);
+}
+.card:hover {
+  border-color: rgba(56,189,248,.4);
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
+}
+
+/* ── Form Elements ───────────────────────────────────── */
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group label { font-size: 0.85rem; color: var(--muted); font-weight: 500; }
+
+input[type="text"], input[type="email"],
+input[type="password"], input[type="date"],
+input[type="number"], select, textarea {
+  width: 100%; padding: 10px 14px;
+  background: var(--bg); color: var(--text);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  font-size: 0.92rem; outline: none;
+  transition: border-color var(--transition);
+  font-family: inherit;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(56,189,248,.1);
+}
+select option { background: var(--surface); }
+
+/* ── Category Badges ─────────────────────────────────── */
+.badge {
+  display: inline-block; padding: 3px 11px;
+  border-radius: 999px; font-size: 0.74rem; font-weight: 700;
+  letter-spacing: .3px; text-transform: uppercase;
+}
+.badge-Sightseeing { background: rgba(59,130,246,.15);  color: #60a5fa; border: 1px solid rgba(59,130,246,.3); }
+.badge-Culture     { background: rgba(167,139,250,.15); color: #c084fc; border: 1px solid rgba(167,139,250,.3); }
+.badge-Nature      { background: rgba(52,211,153,.15);  color: #4ade80; border: 1px solid rgba(52,211,153,.3); }
+.badge-Adventure   { background: rgba(251,146,60,.15);  color: #fb923c; border: 1px solid rgba(251,146,60,.3); }
+.badge-Experience  { background: rgba(56,189,248,.15);  color: #38bdf8; border: 1px solid rgba(56,189,248,.3); }
+
+/* ── Toast Notification ──────────────────────────────── */
+#toast {
+  position: fixed; bottom: 28px; right: 28px;
+  padding: 13px 22px; border-radius: 10px;
+  font-weight: 600; font-size: 0.9rem;
+  opacity: 0; transform: translateY(16px);
+  transition: opacity .3s, transform .3s;
+  pointer-events: none; z-index: 1000;
+  max-width: 320px;
+}
+#toast.show  { opacity: 1; transform: translateY(0); }
+#toast.green { background: var(--success); color: #0f172a; }
+#toast.red   { background: var(--danger);  color: #fff; }
+
+/* ── Empty State ─────────────────────────────────────── */
+.empty-state {
+  text-align: center; padding: 80px 24px;
+  color: var(--muted); grid-column: 1/-1;
+}
+.empty-state .icon { font-size: 3.5rem; margin-bottom: 16px; }
+.empty-state h3 { font-size: 1.1rem; color: var(--text); margin-bottom: 8px; }
+
+/* ── Skeleton Loader ─────────────────────────────────── */
+.skeleton {
+  background: linear-gradient(90deg, var(--surface) 25%, var(--surface2) 50%, var(--surface) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: var(--radius-sm);
+}
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }

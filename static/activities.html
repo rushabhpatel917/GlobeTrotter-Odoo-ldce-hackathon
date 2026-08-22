@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="GlobeTrotter — Discover amazing activities for your trip. Search, filter by city and category, and add to your itinerary."/>
+  <title>Discover Activities — GlobeTrotter</title>
+  <link rel="stylesheet" href="/static/style.css"/>
+  <style>
+    /* ── Page-specific styles ── */
+    .controls-bar {
+      display: flex; gap: 12px; flex-wrap: wrap;
+      padding: 20px 0 8px;
+    }
+    .controls-bar input  { flex: 1; min-width: 220px; }
+    .controls-bar select { width: 190px; flex-shrink: 0; }
+
+    .city-tabs {
+      display: flex; gap: 8px; flex-wrap: wrap;
+      padding: 12px 0 20px;
+    }
+    .city-tab {
+      padding: 7px 18px; border-radius: 999px;
+      border: 1px solid var(--border);
+      background: transparent; color: var(--muted);
+      cursor: pointer; font-size: 0.85rem; font-weight: 500;
+      transition: all var(--transition);
+    }
+    .city-tab:hover { border-color: var(--primary); color: var(--primary); }
+    .city-tab.active {
+      border-color: var(--primary); color: var(--primary);
+      background: rgba(56,189,248,.1);
+    }
+
+    .results-meta {
+      display: flex; justify-content: space-between; align-items: center;
+      padding-bottom: 16px; color: var(--muted); font-size: 0.85rem;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+      gap: 20px;
+      padding-bottom: 60px;
+    }
+
+    /* Activity Card */
+    .activity-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      display: flex; flex-direction: column; gap: 12px;
+      transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition);
+    }
+    .activity-card:hover {
+      border-color: rgba(56,189,248,.45);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 32px rgba(0,0,0,.5);
+    }
+
+    .card-top {
+      display: flex; justify-content: space-between;
+      align-items: flex-start; gap: 8px;
+    }
+    .card-top h3 { font-size: 1.05rem; font-weight: 700; line-height: 1.3; }
+    .city-chip {
+      flex-shrink: 0;
+      font-size: 0.72rem; color: var(--muted);
+      background: rgba(255,255,255,.05);
+      border: 1px solid var(--border);
+      padding: 3px 9px; border-radius: 6px;
+      white-space: nowrap;
+    }
+
+    .card-desc {
+      color: var(--muted); font-size: 0.87rem; line-height: 1.55;
+      display: -webkit-box; -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical; overflow: hidden;
+    }
+
+    .card-meta {
+      display: flex; align-items: center; gap: 16px;
+      font-size: 0.82rem; color: var(--muted);
+    }
+    .card-meta span { display: flex; align-items: center; gap: 4px; }
+
+    .card-bottom {
+      display: flex; justify-content: space-between;
+      align-items: center; margin-top: auto; padding-top: 4px;
+      border-top: 1px solid var(--border);
+    }
+    .price {
+      font-size: 1.15rem; font-weight: 800;
+      color: var(--success);
+    }
+    .price.paid { color: var(--warning); }
+    .price sub { font-size: 0.7rem; font-weight: 400; color: var(--muted); }
+
+    .add-btn {
+      padding: 9px 18px; border-radius: var(--radius-sm); border: none;
+      background: rgba(56,189,248,.12); color: var(--primary);
+      font-size: 0.85rem; font-weight: 700; cursor: pointer;
+      transition: background var(--transition), transform var(--transition);
+      display: flex; align-items: center; gap: 5px;
+    }
+    .add-btn:hover { background: rgba(56,189,248,.24); transform: scale(1.03); }
+    .add-btn.added { background: rgba(52,211,153,.15); color: var(--success); pointer-events: none; }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <a href="/" class="logo">🌍 GlobeTrotter</a>
+    <nav>
+      <a href="/static/index.html">Home</a>
+      <a href="/static/activities.html" class="active">Activities</a>
+    </nav>
+  </nav>
+
+  <div class="page">
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <h1>🗺️ Discover <span>Activities</span></h1>
+      <p>Explore top experiences around the world — search, filter, and add to your trip.</p>
+    </div>
+
+    <!-- Search + Filter -->
+    <div class="controls-bar">
+      <input
+        type="text"
+        id="searchInput"
+        placeholder="🔍  Search activities (e.g. Eiffel Tower, Museum...)"
+        autocomplete="off"
+      />
+      <select id="categoryFilter">
+        <option value="">🏷️ All Categories</option>
+        <option value="Sightseeing">🏛️ Sightseeing</option>
+        <option value="Culture">🎨 Culture</option>
+        <option value="Nature">🌿 Nature</option>
+        <option value="Adventure">⚡ Adventure</option>
+        <option value="Experience">✨ Experience</option>
+      </select>
+    </div>
+
+    <!-- City Quick Filter Tabs -->
+    <div class="city-tabs" id="cityTabs">
+      <button class="city-tab active" data-city="">🌐 All Cities</button>
+      <button class="city-tab" data-city="Paris">🇫🇷 Paris</button>
+      <button class="city-tab" data-city="Rome">🇮🇹 Rome</button>
+      <button class="city-tab" data-city="Barcelona">🇪🇸 Barcelona</button>
+      <button class="city-tab" data-city="London">🇬🇧 London</button>
+      <button class="city-tab" data-city="Tokyo">🇯🇵 Tokyo</button>
+      <button class="city-tab" data-city="Agra">🇮🇳 Agra</button>
+      <button class="city-tab" data-city="Dubai">🇦🇪 Dubai</button>
+    </div>
+
+    <!-- Results Meta -->
+    <div class="results-meta">
+      <span id="countLabel">Loading activities...</span>
+    </div>
+
+    <!-- Activity Grid -->
+    <div class="grid" id="grid"></div>
+
+  </div><!-- /page -->
+
+  <!-- Toast -->
+  <div id="toast"></div>
+
+<script>
+  /* ── State ── */
+  let activeCity = '';
+  const addedIds = new Set();
+
+  /* ── Elements ── */
+  const grid      = document.getElementById('grid');
+  const searchEl  = document.getElementById('searchInput');
+  const catEl     = document.getElementById('categoryFilter');
+  const countEl   = document.getElementById('countLabel');
+  const toastEl   = document.getElementById('toast');
+
+  /* ── City Tabs ── */
+  document.querySelectorAll('.city-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.city-tab').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeCity = btn.dataset.city;
+      loadActivities();
+    });
+  });
+
+  /* ── Live Search / Filter ── */
+  let debounceTimer;
+  searchEl.addEventListener('input', () => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(loadActivities, 280);
+  });
+  catEl.addEventListener('change', loadActivities);
+
+  /* ── Badge CSS class ── */
+  function badgeClass(cat) {
+    const map = {
+      Sightseeing: 'badge-Sightseeing',
+      Culture:     'badge-Culture',
+      Nature:      'badge-Nature',
+      Adventure:   'badge-Adventure',
+      Experience:  'badge-Experience'
+    };
+    return map[cat] || 'badge-Sightseeing';
+  }
+
+  /* ── Render skeleton while loading ── */
+  function showSkeleton(n = 6) {
+    grid.innerHTML = Array.from({length: n}, () => `
+      <div class="activity-card">
+        <div class="skeleton" style="height:22px;width:70%;margin-bottom:8px"></div>
+        <div class="skeleton" style="height:14px;width:40%"></div>
+        <div class="skeleton" style="height:50px;margin-top:4px"></div>
+        <div class="skeleton" style="height:36px;margin-top:8px"></div>
+      </div>
+    `).join('');
+  }
+
+  /* ── Fetch activities from backend ── */
+  async function loadActivities() {
+    showSkeleton();
+    const q      = searchEl.value.trim();
+    const cat    = catEl.value;
+    const params = new URLSearchParams();
+    if (activeCity) params.set('city',     activeCity);
+    if (q)          params.set('q',        q);
+    if (cat)        params.set('category', cat);
+
+    try {
+      const res  = await fetch(`/api/activities?${params}`);
+      const json = await res.json();
+      const list = json.data || [];
+      countEl.textContent = `${list.length} activit${list.length !== 1 ? 'ies' : 'y'} found`;
+      renderCards(list);
+    } catch(err) {
+      grid.innerHTML = `
+        <div class="empty-state">
+          <div class="icon">⚠️</div>
+          <h3>Could not connect to server</h3>
+          <p>Make sure Flask is running: <code>python app.py</code></p>
+        </div>`;
+      countEl.textContent = '';
+    }
+  }
+
+  /* ── Render activity cards ── */
+  function renderCards(list) {
+    if (!list.length) {
+      grid.innerHTML = `
+        <div class="empty-state">
+          <div class="icon">🔭</div>
+          <h3>No activities found</h3>
+          <p>Try a different search term, category, or city.</p>
+        </div>`;
+      return;
+    }
+
+    grid.innerHTML = list.map(a => {
+      const isAdded = addedIds.has(a.id);
+      const isFree  = a.cost === 0;
+      return `
+        <div class="activity-card" id="card-${a.id}">
+          <div class="card-top">
+            <h3>${escHtml(a.name)}</h3>
+            <span class="city-chip">📍 ${escHtml(a.city)}</span>
+          </div>
+
+          <span class="badge ${badgeClass(a.category)}">${a.category}</span>
+
+          <p class="card-desc">${escHtml(a.description || 'No description available.')}</p>
+
+          <div class="card-meta">
+            <span>⏱ ${escHtml(a.duration)}</span>
+          </div>
+
+          <div class="card-bottom">
+            <div class="price ${isFree ? '' : 'paid'}">
+              ${isFree
+                ? '<span style="color:var(--success)">FREE</span>'
+                : `$${a.cost.toFixed(2)} <sub>per person</sub>`}
+            </div>
+            <button
+              class="add-btn ${isAdded ? 'added' : ''}"
+              id="btn-${a.id}"
+              onclick="addActivity(${a.id}, \`${escJs(a.name)}\`)"
+            >
+              ${isAdded ? '✅ Added' : '➕ Add to Trip'}
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  /* ── Add activity to trip ── */
+  async function addActivity(id, name) {
+    const btn = document.getElementById(`btn-${id}`);
+    if (!btn || btn.classList.contains('added')) return;
+
+    btn.textContent = '⏳ Adding...';
+    btn.style.opacity = '.7';
+
+    try {
+      const res  = await fetch(`/api/activities/${id}/add`, {
+        method:  'POST',
+        headers: {'Content-Type': 'application/json'},
+        body:    JSON.stringify({trip_id: 1, day_number: 1})
+      });
+      const json = await res.json();
+
+      if (json.success) {
+        addedIds.add(id);
+        btn.textContent = '✅ Added';
+        btn.classList.add('added');
+        btn.style.opacity = '1';
+        showToast(`✅ "${name}" added to your trip!`, 'green');
+      } else {
+        btn.textContent = '➕ Add to Trip';
+        btn.style.opacity = '1';
+        showToast('❌ ' + (json.message || 'Could not add activity.'), 'red');
+      }
+    } catch(err) {
+      btn.textContent = '➕ Add to Trip';
+      btn.style.opacity = '1';
+      showToast('❌ Server error. Try again.', 'red');
+    }
+  }
+
+  /* ── Toast ── */
+  let toastTimer;
+  function showToast(msg, type = 'green') {
+    clearTimeout(toastTimer);
+    toastEl.textContent = msg;
+    toastEl.className   = `show ${type}`;
+    toastTimer = setTimeout(() => { toastEl.className = ''; }, 3200);
+  }
+
+  /* ── Helpers ── */
+  function escHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+  function escJs(str) {
+    return String(str).replace(/\\/g,'\\\\').replace(/`/g,'\\`');
+  }
+
+  /* ── Initial load ── */
+  loadActivities();
+</script>
+
+</body>
+</html>
