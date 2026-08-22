@@ -186,6 +186,8 @@
       <a href="/static/dashboard.html">Dashboard</a>
       <a href="/static/create-trip.html">Plan New Trip</a>
       <a href="/static/activities.html">Activities</a>
+      <a href="/static/itinerary.html">Itinerary</a>
+      <a href="/static/budget.html">Budget</a>
     </nav>
   </nav>
 
@@ -194,6 +196,7 @@
     <div class="top-nav">
       <a href="/static/dashboard.html" class="back-link">← Back to Dashboard</a>
       <div style="display:flex;gap:10px">
+        <a id="viewBudgetBtn" href="/static/budget.html" class="btn btn-outline btn-sm">💰 Budget Breakdown</a>
         <a id="viewItineraryBtn" href="/static/itinerary.html" class="btn btn-primary btn-sm">📅 View Day-Wise Itinerary</a>
         <button class="btn btn-outline btn-sm" onclick="deleteCurrentTrip()">🗑️ Delete Trip</button>
       </div>
@@ -288,8 +291,10 @@
         </div>`;
       return;
     }
-    const itinBtn = document.getElementById('viewItineraryBtn');
-    if (itinBtn) itinBtn.href = `/static/itinerary.html?trip_id=${currentTripId}`;
+    const itinBtn   = document.getElementById('viewItineraryBtn');
+    const budgetBtn = document.getElementById('viewBudgetBtn');
+    if (itinBtn)   itinBtn.href   = `/static/itinerary.html?trip_id=${currentTripId}`;
+    if (budgetBtn) budgetBtn.href = `/static/budget.html?trip_id=${currentTripId}`;
 
     try {
       const res = await fetch(`/api/trips/${currentTripId}`);
