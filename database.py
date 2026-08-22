@@ -1,6 +1,7 @@
+import os
 import sqlite3
 
-DB_NAME = 'globetrotter.db'
+DB_NAME = os.getenv('DATABASE_URL', 'globetrotter.db')
 
 
 def get_db():
