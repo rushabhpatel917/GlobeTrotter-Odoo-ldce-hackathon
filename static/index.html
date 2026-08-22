@@ -3,124 +3,362 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta name="description" content="GlobeTrotter — Smart Multi-City Travel Planning & Itinerary Budget Engine."/>
-  <title>GlobeTrotter — Smart Travel Itinerary & Budget Engine</title>
+  <meta name="description" content="GlobeTrotter — Smart Travel Planning, Engineered for Perfection."/>
+  <title>GlobeTrotter — Smart AI Travel Planner</title>
   <link rel="stylesheet" href="/static/style.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --bg-dark: #070a13;
+      --card-bg: rgba(15, 23, 42, 0.7);
+      --border-glow: rgba(56, 189, 248, 0.25);
+      --primary-cyan: #38bdf8;
+      --primary-blue: #6366f1;
+      --primary-gradient: linear-gradient(135deg, #38bdf8 0%, #6366f1 100%);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
     body {
-      display: flex; flex-direction: column; min-height: 100vh;
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      background: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.18) 0%, transparent 50%),
+        radial-gradient(circle at 20% 40%, rgba(56, 189, 248, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 80% 60%, rgba(129, 140, 248, 0.1) 0%, transparent 40%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
     }
-    .landing-wrapper {
-      flex: 1; display: flex; align-items: center; justify-content: center;
-      padding: 40px 24px;
+
+    /* ── Header / Navbar ────────────────────────────────────────── */
+    .nav-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 36px;
+      background: rgba(7, 10, 19, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      position: sticky; top: 0; z-index: 500;
     }
-    .landing-card {
-      background: linear-gradient(135deg, #090d16 0%, #1e293b 80%);
-      border: 1px solid rgba(56,189,248,.3);
-      border-radius: 28px;
-      padding: 56px 48px;
-      max-width: 680px; width: 100%;
+
+    .brand-logo {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none; font-size: 1.35rem; font-weight: 800;
+      color: #ffffff; letter-spacing: -0.5px;
+    }
+    .brand-logo-icon {
+      width: 36px; height: 36px;
+      background: var(--primary-gradient);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.1rem;
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.4);
+    }
+
+    .nav-center-pills {
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 4px; border-radius: 999px;
+    }
+    .nav-pill {
+      color: var(--text-muted);
+      text-decoration: none;
+      padding: 8px 18px;
+      border-radius: 999px;
+      font-size: 0.88rem; font-weight: 600;
+      display: flex; align-items: center; gap: 6px;
+      transition: all 0.2s ease;
+    }
+    .nav-pill:hover { color: var(--text-main); background: rgba(255, 255, 255, 0.06); }
+    .nav-pill.active {
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--primary-cyan);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+
+    .nav-right-actions {
+      display: flex; align-items: center; gap: 12px;
+    }
+    .btn-demo-reset {
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-muted);
+      padding: 8px 14px; border-radius: 8px;
+      font-size: 0.82rem; font-weight: 600; cursor: pointer;
+      display: flex; align-items: center; gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn-demo-reset:hover { color: #fff; border-color: rgba(255,255,255,0.3); }
+
+    .btn-new-trip {
+      background: var(--primary-gradient);
+      color: #070a13; font-weight: 700; font-size: 0.88rem;
+      padding: 8px 18px; border-radius: 10px;
+      text-decoration: none;
+      box-shadow: 0 4px 16px rgba(56, 189, 248, 0.3);
+      transition: all 0.2s;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .btn-new-trip:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(56, 189, 248, 0.45); }
+
+    .user-profile-pill {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(30, 41, 59, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 4px 12px 4px 4px; border-radius: 999px;
+    }
+    .user-avatar-img {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: linear-gradient(135deg, #38bdf8, #818cf8);
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 0.78rem; color: #070a13;
+    }
+    .user-name { font-size: 0.84rem; font-weight: 600; color: var(--text-main); }
+
+    /* ── Hero Main Section ──────────────────────────────────────── */
+    .hero-wrapper {
+      max-width: 1050px;
+      margin: 0 auto;
+      padding: 60px 24px 40px;
       text-align: center;
-      box-shadow: 0 24px 64px rgba(0,0,0,.6);
-      position: relative; overflow: hidden;
-    }
-    .landing-card::before {
-      content: ''; position: absolute; inset: 0;
-      background: radial-gradient(circle at 50% 20%, rgba(56,189,248,.12) 0%, transparent 60%);
-      pointer-events: none;
+      display: flex; flex-direction: column; align-items: center;
     }
 
-    .hero-icon { font-size: 5.5rem; margin-bottom: 16px; animation: float 3s ease-in-out infinite; }
-    @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
-
-    .hero-heading {
-      font-size: 2.6rem; font-weight: 800; color: #ffffff; margin-bottom: 12px;
-      letter-spacing: -0.5px;
-    }
-    .hero-sub {
-      color: var(--muted); font-size: 1.05rem; line-height: 1.6; max-width: 520px;
-      margin: 0 auto 32px;
-    }
-
-    .cta-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 14px; margin-bottom: 32px;
-    }
-    .cta-box {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 16px; padding: 18px 20px; text-decoration: none;
-      color: var(--text); font-weight: 700; transition: all var(--transition);
-      display: flex; flex-direction: column; align-items: center; gap: 8px;
-    }
-    .cta-box:hover {
-      border-color: var(--primary); transform: translateY(-3px);
-      box-shadow: 0 8px 24px rgba(56,189,248,.15);
-    }
-    .cta-icon { font-size: 1.6rem; }
-    .cta-title { color: #ffffff; font-size: 0.98rem; }
-    .cta-desc { font-size: 0.78rem; color: var(--muted); font-weight: 500; }
-
-    .status-badge {
+    .badge-ai-intel {
       display: inline-flex; align-items: center; gap: 8px;
-      background: rgba(52,211,153,.12); color: var(--success);
-      border: 1px solid rgba(52,211,153,.3); border-radius: 999px;
-      padding: 6px 18px; font-size: 0.85rem; font-weight: 700;
+      background: rgba(30, 41, 59, 0.5);
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      box-shadow: 0 0 20px rgba(99, 102, 241, 0.15);
+      border-radius: 999px;
+      padding: 8px 20px;
+      font-size: 0.88rem; font-weight: 600;
+      color: #a5b4fc;
+      margin-bottom: 28px;
+    }
+
+    .hero-main-title {
+      font-size: 3.8rem; font-weight: 800;
+      line-height: 1.12; letter-spacing: -1.2px;
+      color: #ffffff; max-width: 860px;
+      margin-bottom: 20px;
+    }
+    .hero-gradient-text {
+      background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-subtitle {
+      font-size: 1.15rem; color: var(--text-muted);
+      max-width: 680px; line-height: 1.6;
+      font-weight: 400; margin-bottom: 40px;
+    }
+
+    /* ── Interactive Prompt Input Bar ────────────────────────────── */
+    .prompt-box-container {
+      width: 100%; max-width: 720px;
+      background: rgba(15, 23, 42, 0.75);
+      border: 1.5px solid rgba(56, 189, 248, 0.35);
+      box-shadow: 0 0 32px rgba(56, 189, 248, 0.15), 0 16px 48px rgba(0,0,0,0.5);
+      border-radius: 999px;
+      padding: 6px 8px 6px 20px;
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 24px;
+      transition: all 0.3s ease;
+    }
+    .prompt-box-container:focus-within {
+      border-color: var(--primary-cyan);
+      box-shadow: 0 0 40px rgba(56, 189, 248, 0.3), 0 20px 50px rgba(0,0,0,0.6);
+    }
+    .prompt-sparkle { font-size: 1.3rem; color: var(--primary-cyan); }
+    .prompt-input {
+      flex: 1; background: transparent; border: none; outline: none;
+      color: #ffffff; font-size: 1.05rem; font-weight: 500;
+      font-family: inherit;
+    }
+    .prompt-input::placeholder { color: #64748b; }
+    
+    .btn-generate-ai {
+      background: var(--primary-gradient);
+      color: #070a13; font-weight: 700; font-size: 0.95rem;
+      padding: 12px 24px; border-radius: 999px; border: none;
+      cursor: pointer; display: flex; align-items: center; gap: 8px;
+      box-shadow: 0 4px 16px rgba(56, 189, 248, 0.3);
+      transition: all 0.2s; white-space: nowrap;
+      text-decoration: none;
+    }
+    .btn-generate-ai:hover { opacity: 0.92; transform: scale(1.02); }
+
+    /* ── Try Prompt Chips ────────────────────────────────────────── */
+    .chips-row {
+      display: flex; align-items: center; justify-content: center;
+      flex-wrap: wrap; gap: 10px; max-width: 850px;
+      margin-bottom: 60px;
+    }
+    .chips-label { font-size: 0.84rem; color: #64748b; font-weight: 500; }
+    .chip-item {
+      background: rgba(30, 41, 59, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-muted); padding: 6px 14px;
+      border-radius: 999px; font-size: 0.82rem; font-weight: 500;
+      cursor: pointer; transition: all 0.2s; text-decoration: none;
+    }
+    .chip-item:hover {
+      background: rgba(56, 189, 248, 0.12);
+      border-color: rgba(56, 189, 248, 0.3);
+      color: var(--primary-cyan);
+    }
+
+    /* ── Feature Cards Grid ──────────────────────────────────────── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      width: 100%; max-width: 1100px;
+      margin-top: 10px;
+    }
+    .feature-card {
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 20px; padding: 24px 20px;
+      text-align: left; transition: all 0.3s;
+      backdrop-filter: blur(12px);
+    }
+    .feature-card:hover {
+      border-color: rgba(56, 189, 248, 0.35);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+    }
+    .feature-metric {
+      font-size: 1.5rem; font-weight: 800; color: #ffffff;
+      margin-bottom: 8px; display: flex; align-items: center; gap: 8px;
+    }
+    .feature-metric span { color: var(--primary-cyan); }
+    .feature-desc {
+      font-size: 0.86rem; color: var(--text-muted);
+      line-height: 1.5; font-weight: 400;
+    }
+
+    @media (max-width: 900px) {
+      .hero-main-title { font-size: 2.6rem; }
+      .features-grid { grid-template-columns: repeat(2, 1fr); }
+      .nav-container { padding: 12px 18px; flex-wrap: wrap; gap: 10px; }
     }
   </style>
 </head>
 <body>
 
   <!-- Navbar -->
-  <nav class="navbar">
-    <a href="/" class="logo">🌍 GlobeTrotter</a>
-    <nav>
-      <a href="/static/dashboard.html">Dashboard</a>
-      <a href="/static/create-trip.html">Plan New Trip</a>
-      <a href="/static/activities.html">Activities</a>
-      <a href="/static/itinerary.html">Itinerary</a>
-      <a href="/static/budget.html">Budget</a>
-    </nav>
-  </nav>
+  <header class="nav-container">
+    <a href="/" class="brand-logo">
+      <div class="brand-logo-icon">🚀</div>
+      <span>GlobeTrotter</span>
+    </a>
 
-  <div class="landing-wrapper">
-    <div class="landing-card">
-      <div class="hero-icon">🌍</div>
-      <h1 class="hero-heading">GlobeTrotter</h1>
-      <p class="hero-sub">
-        Smart Multi-City Travel Planner with Day-Wise Itinerary Scheduling & Automated Budget Calculation Engine.
-      </p>
+    <div class="nav-center-pills">
+      <a href="/" class="nav-pill active">
+        <span>✨</span> Explore
+      </a>
+      <a href="/static/dashboard.html" class="nav-pill">
+        <span>📁</span> My Trips
+      </a>
+    </div>
 
-      <div class="cta-grid">
-        <a href="/static/dashboard.html" class="cta-box">
-          <span class="cta-icon">📊</span>
-          <span class="cta-title">Trip Dashboard</span>
-          <span class="cta-desc">Overview & My Trips</span>
-        </a>
-
-        <a href="/static/create-trip.html" class="cta-box">
-          <span class="cta-icon">🗺️</span>
-          <span class="cta-title">Plan New Trip</span>
-          <span class="cta-desc">Multi-City Creator</span>
-        </a>
-
-        <a href="/static/itinerary.html" class="cta-box">
-          <span class="cta-icon">📅</span>
-          <span class="cta-title">Day-Wise Itinerary</span>
-          <span class="cta-desc">Timeline View</span>
-        </a>
-
-        <a href="/static/budget.html" class="cta-box">
-          <span class="cta-icon">💰</span>
-          <span class="cta-title">Budget Engine</span>
-          <span class="cta-desc">Cost Category Totals</span>
-        </a>
-      </div>
-
-      <div>
-        <span class="status-badge">🟢 API Engine Active & Ready</span>
+    <div class="nav-right-actions">
+      <button class="btn-demo-reset" onclick="location.reload()">
+        <span>📲</span> Demo Reset
+      </button>
+      <a href="/static/create-trip.html" class="btn-new-trip">
+        <span>+</span> New Trip
+      </a>
+      <div class="user-profile-pill">
+        <div class="user-avatar-img">AP</div>
+        <span class="user-name">Arjun Patel</span>
       </div>
     </div>
-  </div>
+  </header>
 
+  <!-- Hero Section -->
+  <main class="hero-wrapper">
+    <div class="badge-ai-intel">
+      <span>✨</span> Powered by Next-Gen Travel AI & Route Intelligence
+    </div>
+
+    <h1 class="hero-main-title">
+      Smart Travel Planning,<br/>
+      <span class="hero-gradient-text">Engineered for Perfection.</span>
+    </h1>
+
+    <p class="hero-subtitle">
+      Turn natural travel ideas into complete day-by-day itineraries, interactive multi-city route maps, and real-time budget tracking in seconds.
+    </p>
+
+    <!-- Prompt Search Input Box -->
+    <div class="prompt-box-container">
+      <span class="prompt-sparkle">✨</span>
+      <input type="text" id="aiPromptInput" class="prompt-input" value="9days spiti valley 35000 rupee" placeholder="Describe your trip idea (e.g. 5 days in Goa with beaches)..."/>
+      <a href="/static/create-trip.html" class="btn-generate-ai" onclick="submitAiPrompt(event)">
+        Generate with AI ➔
+      </a>
+    </div>
+
+    <!-- Try Prompts Chips -->
+    <div class="chips-row">
+      <span class="chips-label">Try prompts:</span>
+      <div class="chip-item" onclick="setPrompt('5 days, Goa, 2 people, ₹20,000, beaches + adventure')">
+        5 days, Goa, 2 people, ₹20,000, beaches + adventure
+      </div>
+      <div class="chip-item" onclick="setPrompt('Ahmedabad to Mumbai to Goa roadtrip, 7 days, culture + food')">
+        Ahmedabad to Mumbai to Goa roadtrip, 7 days, culture + food
+      </div>
+      <div class="chip-item" onclick="setPrompt('3 days, Jaipur, ₹15,000, palaces + heritage')">
+        3 days, Jaipur, ₹15,000, palaces + heritage
+      </div>
+    </div>
+
+    <!-- Feature Cards Grid -->
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-metric"><span>100%</span> Custom</div>
+        <p class="feature-desc">Personalized itineraries tailored dynamically to your travel pace, budget, and favorite cities.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-metric"><span>Multi-Stop</span> Routes</div>
+        <p class="feature-desc">Intelligent multi-city destination sequencing and day-wise stop management.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-metric"><span>Real-Time</span> Budget</div>
+        <p class="feature-desc">Automatic cost aggregation across Transport, Stay, Activities, Meals, and daily averages.</p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-metric"><span>GPS</span> Intel</div>
+        <p class="feature-desc">Curated activity catalog with timing, duration pills, and read-only public sharing.</p>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function setPrompt(text) {
+      document.getElementById('aiPromptInput').value = text;
+    }
+    function submitAiPrompt(e) {
+      const val = document.getElementById('aiPromptInput').value;
+      if (val) {
+        localStorage.setItem('globetrotter_ai_prompt', val);
+      }
+    }
+  </script>
 </body>
 </html>
