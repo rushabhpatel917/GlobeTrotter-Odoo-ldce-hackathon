@@ -41,6 +41,21 @@ def init_db():
         )
     ''')
 
+    # Multi-city trip stops table — M3
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS trip_stops (
+            id          INTEGER PRIMARY KEY AUTOINCREMENT,
+            trip_id     INTEGER NOT NULL,
+            city        TEXT    NOT NULL,
+            country     TEXT,
+            start_date  TEXT,
+            end_date    TEXT,
+            stop_order  INTEGER DEFAULT 1,
+            created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (trip_id) REFERENCES trips(id)
+        )
+    ''')
+
     # Activities table — M2
     c.execute('''
         CREATE TABLE IF NOT EXISTS activities (
@@ -70,7 +85,7 @@ def init_db():
 
     conn.commit()
     conn.close()
-    print('✅ Database initialized.')
+    print('[OK] Database initialized with trip_stops table.')
 
 
 if __name__ == '__main__':

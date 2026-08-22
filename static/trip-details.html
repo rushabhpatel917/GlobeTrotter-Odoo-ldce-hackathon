@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta name="description" content="GlobeTrotter Trip Details — Overview, itinerary, and activities for your travel plan."/>
+  <meta name="description" content="GlobeTrotter Trip Details — Overview, multi-city stops, itinerary, and activities for your travel plan."/>
   <title>Trip Details — GlobeTrotter</title>
   <link rel="stylesheet" href="/static/style.css"/>
   <style>
@@ -63,12 +63,49 @@
     .description-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 8px; }
     .description-card p  { color: var(--muted); font-size: 0.95rem; line-height: 1.6; }
 
-    /* Activities in this trip */
-    .activities-section h2 {
-      font-size: 1.3rem; font-weight: 700; margin-bottom: 16px;
+    /* Multi-City Stops Timeline */
+    .stops-section { margin-bottom: 36px; }
+    .section-title {
+      font-size: 1.25rem; font-weight: 700; margin-bottom: 16px;
       display: flex; justify-content: space-between; align-items: center;
     }
 
+    .stops-timeline {
+      display: flex; flex-direction: column; gap: 14px; position: relative;
+    }
+    
+    .stop-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      transition: border-color var(--transition), transform var(--transition);
+    }
+    .stop-card:hover { border-color: var(--primary); transform: translateX(4px); }
+
+    .stop-main { display: flex; align-items: center; gap: 16px; }
+    .stop-number {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: rgba(56,189,248,.12); color: var(--primary);
+      font-weight: 800; font-size: 0.95rem;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; border: 1px solid rgba(56,189,248,.3);
+    }
+    .stop-details .city-name { font-size: 1.1rem; font-weight: 700; margin-bottom: 2px; }
+    .stop-details .stop-dates { font-size: 0.82rem; color: var(--muted); }
+
+    .stop-actions { display: flex; align-items: center; gap: 10px; }
+
+    .empty-stops {
+      background: var(--surface);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius);
+      padding: 36px; text-align: center; color: var(--muted);
+    }
+
+    /* Activities in this trip */
+    .activities-section { margin-bottom: 40px; }
     .activities-list {
       display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
       gap: 16px;
@@ -88,9 +125,27 @@
       background: var(--surface);
       border: 1px dashed var(--border);
       border-radius: var(--radius);
-      padding: 40px; text-align: center; color: var(--muted);
+      padding: 36px; text-align: center; color: var(--muted);
     }
-    .empty-activities .icon { font-size: 2.5rem; margin-bottom: 10px; }
+
+    /* Modal for Add Stop */
+    .modal-overlay {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.65); backdrop-filter: blur(4px);
+      display: none; align-items: center; justify-content: center;
+      z-index: 500;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 32px; width: 100%; max-width: 480px;
+      animation: slideUp .25s ease;
+    }
+    @keyframes slideUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+    .modal h3 { font-size: 1.2rem; font-weight: 700; margin-bottom: 20px; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .form-group { margin-bottom: 14px; }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
   </style>
 </head>
 <body>
@@ -113,7 +168,7 @@
     </div>
 
     <div id="tripDetailsContainer">
-      <div class="empty-activities">
+      <div class="empty-stops">
         <div class="icon">⏳</div>
         <p>Loading trip details...</p>
       </div>
@@ -121,10 +176,40 @@
 
   </div>
 
+  <!-- Modal: Add Stop -->
+  <div class="modal-overlay" id="addStopModal" onclick="closeStopModalOutside(event)">
+    <div class="modal">
+      <h3>🏙️ Add City Stop</h3>
+      <div class="form-group">
+        <label>City Name *</label>
+        <input type="text" id="stopCity" placeholder="e.g. Paris, Rome, Tokyo"/>
+      </div>
+      <div class="form-group">
+        <label>Country (Optional)</label>
+        <input type="text" id="stopCountry" placeholder="e.g. France, Italy, Japan"/>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Arrive Date</label>
+          <input type="date" id="stopStartDate"/>
+        </div>
+        <div class="form-group">
+          <label>Depart Date</label>
+          <input type="date" id="stopEndDate"/>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline btn-sm" onclick="closeStopModal()">Cancel</button>
+        <button class="btn btn-primary btn-sm" onclick="submitAddStop()">＋ Add Stop</button>
+      </div>
+    </div>
+  </div>
+
   <div id="toast"></div>
 
 <script>
   let currentTripId = null;
+  let currentTripData = null;
 
   async function loadTripDetails() {
     const params = new URLSearchParams(window.location.search);
@@ -132,7 +217,7 @@
 
     if (!currentTripId) {
       document.getElementById('tripDetailsContainer').innerHTML = `
-        <div class="empty-activities">
+        <div class="empty-stops">
           <div class="icon">⚠️</div>
           <p>No trip ID specified in URL.</p>
           <a href="/static/dashboard.html" class="btn btn-primary" style="margin-top:16px">Go to Dashboard</a>
@@ -146,7 +231,7 @@
 
       if (!json.success || !json.data) {
         document.getElementById('tripDetailsContainer').innerHTML = `
-          <div class="empty-activities">
+          <div class="empty-stops">
             <div class="icon">❌</div>
             <p>Trip not found.</p>
             <a href="/static/dashboard.html" class="btn btn-primary" style="margin-top:16px">Go to Dashboard</a>
@@ -154,12 +239,12 @@
         return;
       }
 
-      const trip = json.data;
-      renderTripPage(trip);
+      currentTripData = json.data;
+      renderTripPage(currentTripData);
 
     } catch(err) {
       document.getElementById('tripDetailsContainer').innerHTML = `
-        <div class="empty-activities">
+        <div class="empty-stops">
           <div class="icon">⚠️</div>
           <p>Error loading trip details.</p>
         </div>`;
@@ -180,6 +265,7 @@
       if (diffDays > 0) durationText = `${diffDays} Days`;
     }
 
+    const stops = trip.stops || [];
     const activities = trip.activities || [];
 
     document.getElementById('tripDetailsContainer').innerHTML = `
@@ -187,6 +273,7 @@
         <div class="banner-meta">
           <span class="badge badge-Sightseeing">${statusTag}</span>
           <span class="badge badge-Culture">${publicTag}</span>
+          <span class="badge badge-Nature">${stops.length} City Stop${stops.length !== 1 ? 's' : ''}</span>
         </div>
 
         <h1 class="trip-title">${escHtml(trip.title)}</h1>
@@ -211,16 +298,52 @@
         </div>
       ` : ''}
 
+      <!-- Multi-City Stops Section -->
+      <div class="stops-section">
+        <div class="section-title">
+          <span>🏙️ Multi-City Route (${stops.length} Stops)</span>
+          <button class="btn btn-primary btn-sm" onclick="openStopModal()">＋ Add City Stop</button>
+        </div>
+
+        ${stops.length === 0 ? `
+          <div class="empty-stops">
+            <div class="icon">🧭</div>
+            <p>No city stops added to this trip route yet.</p>
+            <button class="btn btn-outline" onclick="openStopModal()" style="margin-top:12px">＋ Add First Stop</button>
+          </div>
+        ` : `
+          <div class="stops-timeline">
+            ${stops.map((s, idx) => `
+              <div class="stop-card">
+                <div class="stop-main">
+                  <div class="stop-number">${s.stop_order || (idx + 1)}</div>
+                  <div class="stop-details">
+                    <div class="city-name">📍 ${escHtml(s.city)}${s.country ? ', ' + escHtml(s.country) : ''}</div>
+                    <div class="stop-dates">
+                      ${s.start_date ? '📅 ' + s.start_date + (s.end_date ? ' → ' + s.end_date : '') : 'Dates flexible'}
+                    </div>
+                  </div>
+                </div>
+                <div class="stop-actions">
+                  <button class="btn btn-outline btn-sm" onclick="removeStop(${s.id}, '${escJs(s.city)}')">🗑️ Remove</button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+        `}
+      </div>
+
+      <!-- Saved Activities Section -->
       <div class="activities-section">
-        <h2>
+        <div class="section-title">
           <span>📌 Saved Activities (${activities.length})</span>
-          <a href="/static/activities.html" class="btn btn-primary btn-sm">＋ Discover & Add Activities</a>
-        </h2>
+          <a href="/static/activities.html" class="btn btn-primary btn-sm">＋ Add Activities</a>
+        </div>
 
         ${activities.length === 0 ? `
           <div class="empty-activities">
-            <div class="icon">🧭</div>
-            <p>No activities added to this trip yet.</p>
+            <div class="icon">🎟️</div>
+            <p>No activities saved for this trip yet.</p>
             <a href="/static/activities.html" class="btn btn-outline" style="margin-top:12px">Explore Activities →</a>
           </div>
         ` : `
@@ -236,6 +359,62 @@
         `}
       </div>
     `;
+  }
+
+  /* ── Add Stop Logic ── */
+  function openStopModal() { document.getElementById('addStopModal').classList.add('open'); }
+  function closeStopModal() { document.getElementById('addStopModal').classList.remove('open'); }
+  function closeStopModalOutside(e) {
+    if (e.target === document.getElementById('addStopModal')) closeStopModal();
+  }
+
+  async function submitAddStop() {
+    const city = document.getElementById('stopCity').value.trim();
+    if (!city) { showToast('❌ City name is required', 'red'); return; }
+
+    const country   = document.getElementById('stopCountry').value.trim();
+    const startDate = document.getElementById('stopStartDate').value;
+    const endDate   = document.getElementById('stopEndDate').value;
+
+    try {
+      const res = await fetch(`/api/trips/${currentTripId}/stops`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ city, country, start_date: startDate, end_date: endDate })
+      });
+      const json = await res.json();
+
+      if (json.success) {
+        closeStopModal();
+        document.getElementById('stopCity').value = '';
+        document.getElementById('stopCountry').value = '';
+        document.getElementById('stopStartDate').value = '';
+        document.getElementById('stopEndDate').value = '';
+        showToast(`✅ Added stop: ${city}`, 'green');
+        loadTripDetails();
+      } else {
+        showToast('❌ ' + json.message, 'red');
+      }
+    } catch(e) {
+      showToast('❌ Server error adding stop.', 'red');
+    }
+  }
+
+  async function removeStop(stopId, cityName) {
+    if (!confirm(`Remove ${cityName} from this trip?`)) return;
+
+    try {
+      const res = await fetch(`/api/trips/stops/${stopId}`, { method: 'DELETE' });
+      const json = await res.json();
+      if (json.success) {
+        showToast(`✅ Removed stop: ${cityName}`, 'green');
+        loadTripDetails();
+      } else {
+        showToast('❌ ' + json.message, 'red');
+      }
+    } catch(e) {
+      showToast('❌ Server error removing stop.', 'red');
+    }
   }
 
   function badgeClass(cat) {
@@ -262,6 +441,9 @@
 
   function escHtml(s) {
     return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+  function escJs(s) {
+    return String(s || '').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
   }
 
   let toastTimer;

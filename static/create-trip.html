@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta name="description" content="Plan a new travel adventure on GlobeTrotter — set dates, trip name, and description."/>
+  <meta name="description" content="Plan a new travel adventure on GlobeTrotter — set dates, trip name, multi-city stops, and description."/>
   <title>Plan New Trip — GlobeTrotter</title>
   <link rel="stylesheet" href="/static/style.css"/>
   <style>
@@ -78,6 +78,23 @@
     input:checked + .slider { background-color: var(--primary); }
     input:checked + .slider:before { transform: translateX(22px); }
 
+    /* Stops inputs */
+    .stops-box {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px; background: var(--bg);
+    }
+    .stops-box-header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 14px;
+    }
+    .stops-box-header h3 { font-size: 1rem; font-weight: 700; }
+
+    .stop-row-input {
+      display: grid; grid-template-columns: 1fr 1fr auto; gap: 10px;
+      margin-bottom: 10px; align-items: center;
+    }
+
     .form-actions {
       display: flex; justify-content: flex-end; gap: 12px;
       margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--border);
@@ -104,7 +121,7 @@
 
       <div class="form-header">
         <h1>✈️ Plan a New <span>Trip</span></h1>
-        <p>Set up your trip details. You can add destinations and activities next!</p>
+        <p>Set up your trip details and multi-city destinations.</p>
       </div>
 
       <div class="error-box" id="errorBox"></div>
@@ -119,7 +136,7 @@
             <input
               type="text"
               id="tripName"
-              placeholder="e.g. Summer in Paris, Tokyo Odyssey 2026"
+              placeholder="e.g. European Grand Tour, Japan Spring Expedition"
               required
             />
           </div>
@@ -146,6 +163,17 @@
             </div>
           </div>
 
+          <!-- Multi-City Stops (Optional Initial Destinations) -->
+          <div class="stops-box">
+            <div class="stops-box-header">
+              <h3>🏙️ Initial City Destinations (Optional)</h3>
+              <button type="button" class="btn btn-outline btn-sm" onclick="addStopInputRow()">＋ Add Destination</button>
+            </div>
+            <div id="stopRowsContainer">
+              <!-- Dynamically added -->
+            </div>
+          </div>
+
           <!-- Public Toggle -->
           <div class="visibility-toggle">
             <div class="info">
@@ -162,7 +190,7 @@
 
         <div class="form-actions">
           <a href="/static/dashboard.html" class="btn btn-outline">Cancel</a>
-          <button type="submit" class="btn btn-primary" id="submitBtn">🚀 Create Trip & View Details →</button>
+          <button type="submit" class="btn btn-primary" id="submitBtn">🚀 Create Trip & View Stops →</button>
         </div>
 
       </form>
@@ -174,6 +202,31 @@
   <div id="toast"></div>
 
 <script>
+  let stopCount = 0;
+
+  function addStopInputRow(defaultCity = '', defaultCountry = '') {
+    stopCount++;
+    const container = document.getElementById('stopRowsContainer');
+    const row = document.createElement('div');
+    row.className = 'stop-row-input';
+    row.id = `stopRow_${stopCount}`;
+    row.innerHTML = `
+      <input type="text" class="stop-city" placeholder="City (e.g. Paris)" value="${defaultCity}"/>
+      <input type="text" class="stop-country" placeholder="Country (e.g. France)" value="${defaultCountry}"/>
+      <button type="button" class="btn btn-outline btn-sm" onclick="removeStopRow(${stopCount})">✕</button>
+    `;
+    container.appendChild(row);
+  }
+
+  function removeStopRow(id) {
+    const row = document.getElementById(`stopRow_${id}`);
+    if (row) row.remove();
+  }
+
+  // Pre-populate with two sample destinations for easy testing!
+  addStopInputRow('Paris', 'France');
+  addStopInputRow('Rome', 'Italy');
+
   async function handleTripSubmit(e) {
     e.preventDefault();
     const errorBox  = document.getElementById('errorBox');
@@ -186,7 +239,21 @@
     const endDate     = document.getElementById('endDate').value;
     const isPublic    = document.getElementById('isPublic').checked;
 
-    /* Basic Client Validation */
+    /* Gather multi-city stops */
+    const stopRows = document.querySelectorAll('.stop-row-input');
+    const stops = [];
+    stopRows.forEach((row, index) => {
+      const city = row.querySelector('.stop-city').value.trim();
+      const country = row.querySelector('.stop-country').value.trim();
+      if (city) {
+        stops.push({
+          city: city,
+          country: country,
+          stop_order: index + 1
+        });
+      }
+    });
+
     if (!name) {
       showError('Please enter a trip name.');
       return;
@@ -211,27 +278,28 @@
           start_date: startDate,
           end_date: endDate,
           is_public: isPublic ? 1 : 0,
-          owner_id: 1
+          owner_id: 1,
+          stops: stops
         })
       });
 
       const json = await res.json();
 
       if (json.success && json.data) {
-        showToast('✅ Trip created successfully! Redirecting...', 'green');
+        showToast('✅ Multi-city trip created! Redirecting...', 'green');
         setTimeout(() => {
           window.location.href = `/static/trip-details.html?id=${json.data.id}`;
         }, 800);
       } else {
         showError(json.message || 'Failed to create trip.');
         submitBtn.disabled = false;
-        submitBtn.textContent = '🚀 Create Trip & View Details →';
+        submitBtn.textContent = '🚀 Create Trip & View Stops →';
       }
 
     } catch(err) {
       showError('Server connection error. Ensure Flask server is running.');
       submitBtn.disabled = false;
-      submitBtn.textContent = '🚀 Create Trip & View Details →';
+      submitBtn.textContent = '🚀 Create Trip & View Stops →';
     }
   }
 
