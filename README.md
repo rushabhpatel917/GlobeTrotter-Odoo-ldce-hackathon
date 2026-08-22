@@ -5,14 +5,6 @@
 
 ---
 
-## 🌐 Live Demo & Public Deployment URL
-
-- 🚀 **Live Active Public URL:** **[https://wicked-months-worry.loca.lt](https://wicked-months-worry.loca.lt)**
-- 🔒 **Shared Public Read-Only Trip View:** [https://wicked-months-worry.loca.lt/static/public-trip.html?id=1](https://wicked-months-worry.loca.lt/static/public-trip.html?id=1)
-- 🏠 **Local Web App Portal:** `http://localhost:5000`
-
----
-
 ## ✨ Features
 
 - **🗺️ Multi-City Destinations:** Create trips with ordered destination stops (e.g. Paris ➔ Rome ➔ Barcelona).
