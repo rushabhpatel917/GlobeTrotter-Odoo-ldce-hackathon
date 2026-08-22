@@ -3,15 +3,15 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta name="description" content="GlobeTrotter Day-Wise Itinerary — Complete chronological timeline view for multi-city travel activities."/>
-  <title>Day-Wise Itinerary — GlobeTrotter</title>
+  <meta name="description" content="GlobeTrotter Day-Wise Itinerary — Executive visual travel timeline."/>
+  <title>Executive Travel Itinerary Timeline — GlobeTrotter</title>
   <link rel="stylesheet" href="/static/style.css"/>
   <style>
-    /* ── Day-Wise Timeline Styling (Premium Aesthetic) ── */
+    /* ── Executive Visual Itinerary Polish (M4 Turn 4) ── */
     .itin-wrapper {
-      max-width: 960px;
-      margin: 36px auto 80px;
-      padding: 0 24px;
+      max-width: 980px;
+      margin: 32px auto 90px;
+      padding: 0 20px;
     }
 
     .top-bar {
@@ -20,150 +20,194 @@
     }
     .back-btn {
       display: inline-flex; align-items: center; gap: 6px;
-      color: var(--muted); text-decoration: none; font-size: 0.9rem;
+      color: var(--muted); text-decoration: none; font-size: 0.9rem; font-weight: 600;
       transition: color var(--transition);
     }
     .back-btn:hover { color: var(--primary); }
 
-    /* Itinerary Banner */
-    .itin-banner {
-      background: linear-gradient(135deg, #090d16 0%, #1e293b 100%);
-      border: 1px solid var(--border);
+    /* Executive Hero Banner */
+    .hero-banner {
+      background: linear-gradient(135deg, #090d16 0%, #1e293b 60%, #0f172a 100%);
+      border: 1px solid rgba(56,189,248,.3);
       border-radius: 24px;
-      padding: 36px;
+      padding: 36px 40px;
       margin-bottom: 36px;
-      box-shadow: 0 16px 40px rgba(0,0,0,.5);
+      box-shadow: 0 20px 50px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.1);
       position: relative; overflow: hidden;
     }
-    .itin-banner::after {
-      content: '🗺️';
-      position: absolute; right: 28px; bottom: 12px;
-      font-size: 7.5rem; opacity: 0.08; pointer-events: none;
+    .hero-banner::after {
+      content: '✨';
+      position: absolute; right: 28px; bottom: 8px;
+      font-size: 8rem; opacity: 0.08; pointer-events: none;
     }
 
-    .itin-title { font-size: 2.2rem; font-weight: 800; color: #f8fafc; margin-bottom: 12px; }
-
-    .summary-pills {
-      display: flex; gap: 16px; flex-wrap: wrap; margin-top: 18px;
+    .hero-title-row {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      flex-wrap: wrap; gap: 16px; margin-bottom: 16px;
     }
-    .summary-chip {
-      background: rgba(15,23,42,.7); border: 1px solid var(--border);
-      padding: 8px 16px; border-radius: 12px; font-size: 0.88rem;
-      display: flex; align-items: center; gap: 8px; color: var(--text);
-    }
-    .summary-chip strong { color: var(--primary); }
+    .hero-title { font-size: 2.3rem; font-weight: 800; color: #ffffff; letter-spacing: -0.5px; }
 
-    /* Day Header Card */
-    .day-card {
-      margin-bottom: 42px;
+    .cost-hero-box {
+      background: rgba(52,211,153,.1);
+      border: 1px solid rgba(52,211,153,.3);
+      padding: 10px 20px; border-radius: 16px; text-align: right;
     }
+    .cost-hero-label { font-size: 0.75rem; text-transform: uppercase; color: var(--muted); letter-spacing: 0.8px; font-weight: 700; }
+    .cost-hero-val   { font-size: 1.6rem; font-weight: 800; color: var(--success); }
 
+    .summary-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 12px; margin-top: 24px;
+    }
+    .sum-card {
+      background: rgba(15,23,42,.6); backdrop-filter: blur(8px);
+      border: 1px solid var(--border); padding: 12px 16px; border-radius: 14px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .sum-icon { font-size: 1.6rem; }
+    .sum-val  { font-size: 1.1rem; font-weight: 800; color: #f8fafc; }
+    .sum-lbl  { font-size: 0.76rem; color: var(--muted); font-weight: 600; }
+
+    /* Day Card Container */
+    .day-container { margin-bottom: 48px; }
+
+    /* Day Header Divider */
     .day-header {
-      background: linear-gradient(90deg, var(--surface) 0%, rgba(30,41,59,.4) 100%);
+      background: linear-gradient(90deg, #1e293b 0%, var(--surface) 100%);
       border: 1px solid var(--border);
-      border-left: 5px solid var(--primary);
-      border-radius: 16px;
-      padding: 16px 24px;
+      border-left: 6px solid var(--primary);
+      border-radius: 18px;
+      padding: 18px 24px;
       margin-bottom: 24px;
       display: flex; justify-content: space-between; align-items: center;
       flex-wrap: wrap; gap: 12px;
-      box-shadow: var(--shadow);
+      box-shadow: 0 4px 20px rgba(0,0,0,.3);
     }
+    .day-header.cat-culture { border-left-color: #a855f7; }
+    .day-header.cat-nature  { border-left-color: #34d399; }
 
-    .day-title-box { display: flex; align-items: center; gap: 12px; }
-    .day-number-badge {
+    .day-tag {
       background: var(--primary); color: #0f172a;
       font-weight: 800; font-size: 0.85rem; padding: 4px 12px;
-      border-radius: 999px; text-transform: uppercase; letter-spacing: 0.5px;
+      border-radius: 999px; text-transform: uppercase; letter-spacing: 0.6px;
     }
-    .day-city-name { font-size: 1.3rem; font-weight: 800; color: #f8fafc; }
-    .day-date-str { font-size: 0.9rem; color: var(--accent); font-weight: 600; }
+    .day-city-title { font-size: 1.35rem; font-weight: 800; color: #ffffff; display: flex; align-items: center; gap: 8px; }
+    .day-date-badge {
+      font-size: 0.86rem; color: var(--accent); font-weight: 700;
+      background: rgba(56,189,248,.1); border: 1px solid rgba(56,189,248,.25);
+      padding: 4px 12px; border-radius: 999px;
+    }
 
-    /* Timeline Structure */
+    /* Vertical Timeline Connector */
     .timeline {
       position: relative;
-      padding-left: 36px;
+      padding-left: 42px;
     }
     .timeline::before {
       content: '';
-      position: absolute; left: 15px; top: 8px; bottom: 8px;
-      width: 3px; background: linear-gradient(180deg, var(--primary) 0%, var(--accent) 100%);
-      border-radius: 999px; opacity: 0.4;
+      position: absolute; left: 18px; top: 12px; bottom: 12px;
+      width: 3px;
+      background: linear-gradient(180deg, var(--primary) 0%, #a855f7 50%, var(--success) 100%);
+      border-radius: 999px;
+      box-shadow: 0 0 10px rgba(56,189,248,.4);
     }
 
-    .timeline-node {
+    /* Node Item */
+    .timeline-item {
       position: relative; margin-bottom: 24px;
     }
-    .timeline-node:last-child { margin-bottom: 0; }
+    .timeline-item:last-child { margin-bottom: 0; }
 
-    /* Node Marker Dot */
-    .node-dot {
-      position: absolute; left: -36px; top: 18px;
-      width: 24px; height: 24px; border-radius: 50%;
-      background: var(--bg); border: 3px solid var(--primary);
-      box-shadow: 0 0 10px rgba(56,189,248,.5);
+    /* Node Marker Badge */
+    .node-icon-badge {
+      position: absolute; left: -42px; top: 16px;
+      width: 32px; height: 32px; border-radius: 50%;
+      background: #0f172a; border: 2px solid var(--primary);
+      box-shadow: 0 0 14px rgba(56,189,248,.6);
       display: flex; align-items: center; justify-content: center;
-      font-size: 0.75rem; color: var(--primary);
+      font-size: 0.95rem; z-index: 2;
     }
 
-    /* Node Content Card */
-    .node-card {
+    /* Node Activity Card */
+    .act-card {
       background: var(--surface);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 20px 24px;
+      border-left: 4px solid var(--primary);
+      border-radius: 18px;
+      padding: 22px 26px;
       display: flex; justify-content: space-between; align-items: center;
-      gap: 18px; flex-wrap: wrap;
+      gap: 20px; flex-wrap: wrap;
       transition: all var(--transition);
+      box-shadow: 0 4px 16px rgba(0,0,0,.3);
     }
-    .node-card:hover {
-      border-color: rgba(56,189,248,.4);
-      transform: translateX(4px);
-      box-shadow: 0 8px 24px rgba(0,0,0,.4);
-    }
-
-    .node-left {
-      display: flex; align-items: center; gap: 16px; flex: 1; min-width: 280px;
+    .act-card:hover {
+      border-color: rgba(56,189,248,.5);
+      transform: translateX(6px);
+      box-shadow: 0 10px 30px rgba(0,0,0,.5);
     }
 
-    .time-badge {
+    .act-card.cat-Culture    { border-left-color: #a855f7; }
+    .act-card.cat-Nature     { border-left-color: #34d399; }
+    .act-card.cat-Adventure  { border-left-color: #fbbf24; }
+    .act-card.cat-Experience { border-left-color: #f472b6; }
+
+    .act-main-info {
+      display: flex; align-items: flex-start; gap: 16px; flex: 1; min-width: 280px;
+    }
+
+    .time-chip {
       background: rgba(56,189,248,.12); color: var(--primary);
       border: 1px solid rgba(56,189,248,.3);
       font-size: 0.9rem; font-weight: 800;
-      padding: 8px 14px; border-radius: 10px;
+      padding: 8px 14px; border-radius: 12px;
       white-space: nowrap; flex-shrink: 0;
     }
 
-    .act-details h4 {
-      font-size: 1.1rem; font-weight: 700; color: #f8fafc; margin-bottom: 4px;
+    .act-body h4 {
+      font-size: 1.15rem; font-weight: 800; color: #ffffff; margin-bottom: 6px; line-height: 1.3;
     }
-    .act-details p {
-      font-size: 0.86rem; color: var(--muted); line-height: 1.45; margin-bottom: 8px;
+    .act-body p {
+      font-size: 0.88rem; color: var(--muted); line-height: 1.5; margin-bottom: 10px;
     }
 
-    .act-meta-row {
-      display: flex; gap: 12px; flex-wrap: wrap; font-size: 0.8rem; color: var(--muted);
+    .pills-row {
+      display: flex; gap: 10px; flex-wrap: wrap; font-size: 0.8rem;
     }
-    .meta-tag {
+    .pill {
       background: var(--bg); border: 1px solid var(--border);
-      padding: 3px 8px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px;
+      color: var(--muted); padding: 4px 10px; border-radius: 8px;
+      display: inline-flex; align-items: center; gap: 5px; font-weight: 600;
     }
 
-    .node-right {
-      display: flex; flex-direction: column; align-items: flex-end; gap: 8px;
+    .act-cost-box {
+      text-align: right; flex-shrink: 0;
     }
-    .cost-badge {
-      font-size: 1.1rem; font-weight: 800; color: var(--success);
+    .cost-val {
+      font-size: 1.25rem; font-weight: 800; color: var(--success);
     }
-    .cost-badge.paid { color: var(--warning); }
+    .cost-val.paid { color: var(--warning); }
+    .cost-sub { font-size: 0.72rem; color: var(--muted); }
+
+    /* Mobile adjustments */
+    @media (max-width: 640px) {
+      .hero-banner { padding: 24px 20px; }
+      .hero-title { font-size: 1.7rem; }
+      .timeline { padding-left: 28px; }
+      .timeline::before { left: 12px; }
+      .node-icon-badge { left: -28px; width: 26px; height: 26px; font-size: 0.8rem; }
+      .act-card { padding: 16px; flex-direction: column; align-items: flex-start; }
+      .act-cost-box { text-align: left; width: 100%; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+    }
 
     /* Print styling */
     @media print {
       body { background: #fff; color: #000; }
       .navbar, .top-bar, .no-print { display: none !important; }
       .itin-wrapper { max-width: 100%; margin: 0; padding: 0; }
-      .node-card { border: 1px solid #ccc; background: #fff; color: #000; box-shadow: none; }
-      .act-details h4 { color: #000; }
+      .hero-banner { background: #f8fafc; border: 1px solid #ccc; color: #000; }
+      .hero-title { color: #000; }
+      .act-card { border: 1px solid #ccc; background: #fff; color: #000; box-shadow: none; }
+      .act-body h4 { color: #000; }
     }
   </style>
 </head>
@@ -185,22 +229,22 @@
     <div class="top-bar">
       <a href="/static/dashboard.html" class="back-btn">← Back to Dashboard</a>
       <div class="no-print" style="display:flex;gap:10px">
-        <button class="btn btn-outline btn-sm" onclick="window.print()">🖨️ Print Itinerary</button>
+        <button class="btn btn-outline btn-sm" onclick="window.print()">🖨️ Print / PDF</button>
         <a id="editTripLink" href="#" class="btn btn-primary btn-sm">✏️ Edit Trip Details</a>
       </div>
     </div>
 
-    <!-- Banner -->
-    <div class="itin-banner" id="itinBanner">
-      <div class="skeleton" style="height:32px;width:60%;margin-bottom:12px"></div>
+    <!-- Executive Hero Banner -->
+    <div class="hero-banner" id="heroBanner">
+      <div class="skeleton" style="height:36px;width:60%;margin-bottom:12px"></div>
       <div class="skeleton" style="height:20px;width:40%"></div>
     </div>
 
-    <!-- Timeline Container -->
+    <!-- Day-Wise Timeline Container -->
     <div id="timelineContainer">
       <div class="empty-state">
         <div class="icon">⏳</div>
-        <h3>Loading day-wise itinerary...</h3>
+        <h3>Building day-wise travel timeline...</h3>
       </div>
     </div>
 
@@ -225,60 +269,101 @@
         return;
       }
 
-      renderBanner(json.data);
-      renderTimeline(json.data);
+      renderHeroBanner(json.data);
+      renderDayWiseTimeline(json.data);
 
     } catch(e) {
       showError('Failed to connect to server.');
     }
   }
 
-  function renderBanner(data) {
-    const totalCost = (data.chronological || []).reduce((sum, item) => sum + (item.cost || 0), 0);
-    const actCount  = (data.chronological || []).length;
-    
-    // Unique cities count
-    const citiesSet = new Set((data.chronological || []).map(i => i.city));
+  function getCategoryEmoji(cat) {
+    const map = { Sightseeing: '🏛️', Culture: '🎨', Nature: '🌿', Adventure: '⚡', Experience: '✨' };
+    return map[cat] || '📍';
+  }
 
-    document.getElementById('itinBanner').innerHTML = `
-      <h1 class="itin-title">📅 ${escHtml(data.trip_title)}</h1>
-      <p style="color:var(--muted);font-size:0.95rem">
-        Day-wise chronological travel schedule & itinerary timeline
-      </p>
+  function renderHeroBanner(data) {
+    const items     = data.chronological || [];
+    const totalCost = items.reduce((sum, item) => sum + (item.cost || 0), 0);
+    const actCount  = items.length;
+    const citiesSet = new Set(items.map(i => i.city));
 
-      <div class="summary-pills">
-        <div class="summary-chip">
-          🗓️ <span><strong>${data.start_date || 'Flexible Date'}</strong> ${data.end_date ? ' → ' + data.end_date : ''}</span>
+    let durationText = 'Flexible Duration';
+    if (data.start_date && data.end_date) {
+      const start = new Date(data.start_date);
+      const end   = new Date(data.end_date);
+      const diffDays = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+      if (diffDays > 0) durationText = `${diffDays} Days`;
+    }
+
+    document.getElementById('heroBanner').innerHTML = `
+      <div class="hero-title-row">
+        <div>
+          <span class="badge badge-Sightseeing" style="margin-bottom:8px">✈️ Official Itinerary</span>
+          <h1 class="hero-title">${escHtml(data.trip_title)}</h1>
+          <p style="color:var(--muted);font-size:0.95rem">
+            Day-by-Day Chronological Itinerary & Activity Timeline
+          </p>
         </div>
-        <div class="summary-chip">
-          🏙️ <span><strong>${citiesSet.size}</strong> Destinatio${citiesSet.size !== 1 ? 'ns' : ''}</span>
+
+        <div class="cost-hero-box">
+          <div class="cost-hero-label">Total Estimated Budget</div>
+          <div class="cost-hero-val">${totalCost > 0 ? '$' + totalCost.toFixed(2) : 'FREE'}</div>
         </div>
-        <div class="summary-chip">
-          🎟️ <span><strong>${actCount}</strong> Scheduled Activit${actCount !== 1 ? 'ies' : 'y'}</span>
+      </div>
+
+      <div class="summary-grid">
+        <div class="sum-card">
+          <div class="sum-icon">📅</div>
+          <div>
+            <div class="sum-val">${escHtml(data.start_date || 'Flexible')}</div>
+            <div class="sum-lbl">Start Date</div>
+          </div>
         </div>
-        <div class="summary-chip">
-          💰 Total Cost: <strong>${totalCost > 0 ? '$' + totalCost.toFixed(2) : 'Free'}</strong>
+
+        <div class="sum-card">
+          <div class="sum-icon">⏱</div>
+          <div>
+            <div class="sum-val">${durationText}</div>
+            <div class="sum-lbl">Trip Duration</div>
+          </div>
+        </div>
+
+        <div class="sum-card">
+          <div class="sum-icon">🏙️</div>
+          <div>
+            <div class="sum-val">${citiesSet.size} City Stop${citiesSet.size !== 1 ? 's' : ''}</div>
+            <div class="sum-lbl">Destinations</div>
+          </div>
+        </div>
+
+        <div class="sum-card">
+          <div class="sum-icon">🎟️</div>
+          <div>
+            <div class="sum-val">${actCount} Activity${actCount !== 1 ? 'ies' : ''}</div>
+            <div class="sum-lbl">Scheduled</div>
+          </div>
         </div>
       </div>
     `;
   }
 
-  function renderTimeline(data) {
+  function renderDayWiseTimeline(data) {
     const container = document.getElementById('timelineContainer');
     const itinerary = data.itinerary || [];
 
     if (!itinerary.length) {
       container.innerHTML = `
         <div class="empty-state">
-          <div class="icon">🧭</div>
-          <h3>No activities scheduled yet</h3>
-          <p>Add destinations and discover activities to generate your day-wise itinerary timeline.</p>
-          <a href="/static/activities.html?trip_id=${currentTripId}" class="btn btn-primary" style="margin-top:16px">＋ Add Activities Now</a>
+          <div class="icon">🔭</div>
+          <h3>No activities scheduled for this trip yet</h3>
+          <p>Browse destinations and discover activities to automatically build your day-wise timeline.</p>
+          <a href="/static/activities.html?trip_id=${currentTripId}" class="btn btn-primary" style="margin-top:16px">＋ Discover & Add Activities</a>
         </div>`;
       return;
     }
 
-    let dayCounter = 1;
+    let dayNum = 1;
     container.innerHTML = itinerary.map(dayBlock => {
       const dateStr = dayBlock.date;
       const cities  = dayBlock.cities || [];
@@ -286,45 +371,46 @@
       return cities.map(cityBlock => {
         const cityName = cityBlock.city;
         const acts     = cityBlock.activities || [];
-        const currentDayNum = dayCounter++;
+        const currentDay = dayNum++;
 
         return `
-          <div class="day-card">
-            <!-- Day / Date / City Header -->
-            <div class="day-header">
-              <div class="day-title-box">
-                <span class="day-number-badge">DAY ${currentDayNum}</span>
-                <span class="day-city-name">📍 ${escHtml(cityName)}</span>
+          <div class="day-container">
+            <!-- Day & City Header -->
+            <div class="day-header cat-${(acts[0] && acts[0].category) || 'Sightseeing'}">
+              <div class="day-city-title">
+                <span class="day-tag">DAY ${currentDay}</span>
+                <span>📍 ${escHtml(cityName)}</span>
               </div>
-              <div class="day-date-str">📅 ${escHtml(dateStr)}</div>
+              <div class="day-date-badge">🗓️ ${escHtml(dateStr)}</div>
             </div>
 
-            <!-- Timeline Activities -->
+            <!-- Timeline -->
             <div class="timeline">
-              ${acts.map((a, idx) => `
-                <div class="timeline-node">
-                  <div class="node-dot">📍</div>
+              ${acts.map(a => `
+                <div class="timeline-item">
+                  <div class="node-icon-badge">${getCategoryEmoji(a.category)}</div>
 
-                  <div class="node-card">
-                    <div class="node-left">
-                      <div class="time-badge">🕒 ${escHtml(a.time || '09:00 AM')}</div>
+                  <div class="act-card cat-${a.category}">
+                    <div class="act-main-info">
+                      <div class="time-chip">🕒 ${escHtml(a.time || '09:00 AM')}</div>
 
-                      <div class="act-details">
+                      <div class="act-body">
                         <h4>${escHtml(a.name)}</h4>
                         ${a.description ? `<p>${escHtml(a.description)}</p>` : ''}
 
-                        <div class="act-meta-row">
-                          <div class="meta-tag">⏱ ${escHtml(a.duration)}</div>
-                          <div class="meta-tag">🏷️ ${escHtml(a.category)}</div>
-                          ${a.notes ? `<div class="meta-tag">📝 ${escHtml(a.notes)}</div>` : ''}
+                        <div class="pills-row">
+                          <div class="pill">⏱ ${escHtml(a.duration)}</div>
+                          <div class="pill">🏷️ ${escHtml(a.category)}</div>
+                          ${a.notes ? `<div class="pill">📝 ${escHtml(a.notes)}</div>` : ''}
                         </div>
                       </div>
                     </div>
 
-                    <div class="node-right">
-                      <div class="cost-badge ${a.cost > 0 ? 'paid' : ''}">
+                    <div class="act-cost-box">
+                      <div class="cost-val ${a.cost > 0 ? 'paid' : ''}">
                         ${a.cost > 0 ? '$' + a.cost.toFixed(2) : 'FREE'}
                       </div>
+                      <div class="cost-sub">${a.cost > 0 ? 'per person' : 'no fee'}</div>
                     </div>
                   </div>
                 </div>
