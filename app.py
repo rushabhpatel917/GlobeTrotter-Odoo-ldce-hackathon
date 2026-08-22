@@ -18,7 +18,10 @@ def index():
 
 # ── Register blueprints here as features are added ────────────
 from routes.activities import activities_bp
+from routes.trips import trips_bp
+
 app.register_blueprint(activities_bp, url_prefix='/api')
+app.register_blueprint(trips_bp,      url_prefix='/api')
 
 # from routes.auth import auth_bp
 # app.register_blueprint(auth_bp, url_prefix='/api/auth')
